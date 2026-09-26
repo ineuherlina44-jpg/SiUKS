@@ -1,5 +1,19 @@
 <?php
 
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DaruratController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\KategoriObatController;
+use App\Http\Controllers\KategoriPenilaianController;
+use App\Http\Controllers\KelasController;
+use App\Http\Controllers\LaporanController;
+use App\Http\Controllers\ObatController;
+use App\Http\Controllers\PenilaianController as PenilaianSiswaController;
+use App\Http\Controllers\RekamController as RekamMedisController;
+use App\Http\Controllers\SiswaController;
+use App\Http\Controllers\SuratIzinController;
+use App\Http\Controllers\TransaksiObatController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
