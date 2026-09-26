@@ -1,0 +1,95 @@
+/* SiUKS admin dashboard */
+.siuks-body { margin: 0; min-width: 320px; color: #26364a; background: #eaf3fc; font-family: Inter, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+.siuks-body * { box-sizing: border-box; }
+.siuks-body button, .siuks-body input { font: inherit; }
+.siuks-body a { color: inherit; text-decoration: none; }
+.siuks-app { min-height: calc(100vh - 14px); margin: 7px; overflow: hidden; background: #f5f8fc; border: 1px solid #cfdfef; border-radius: 8px; box-shadow: 0 3px 14px #2445680b; }
+.siuks-sidebar { position: fixed; z-index: 4; inset: 8px auto 8px 8px; display: flex; width: clamp(156px, 20vw, 232px); flex-direction: column; padding: 12px 10px 9px; background: #f8fafc; border-right: 1px solid #dbe5ef; border-radius: 8px 0 0 8px; }
+.siuks-brand { display: flex; min-height: 42px; align-items: center; gap: 9px; padding: 0 6px 12px; }
+.siuks-brand-icon { display: grid; width: 34px; height: 38px; flex: 0 0 auto; place-items: center; color: #24659c; }
+.siuks-brand-icon svg { width: 34px; height: 34px; }
+.siuks-brand-text { display: flex; min-width: 0; flex-direction: column; gap: 2px; }
+.siuks-brand-text strong { color: #173550; font-size: 15px; font-weight: 700; letter-spacing: -.5px; }
+.siuks-brand-text small { overflow: hidden; color: #687d91; font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+.siuks-navigation { display: grid; gap: 5px; padding-top: 8px; border-top: 1px solid #e4ebf3; }
+.siuks-nav-item { display: flex; min-height: 33px; align-items: center; gap: 10px; padding: 0 9px; color: #485e72; border-radius: 5px; font-size: 10px; font-weight: 500; transition: background .15s, color .15s; }
+.siuks-nav-item:hover { color: #1769af; background: #edf5fc; }
+.siuks-nav-item.is-active { color: #185f9e; background: #dcecfb; }
+.siuks-nav-item svg { width: 15px; height: 15px; flex: 0 0 auto; }
+.siuks-sidebar-foot { display: flex; align-items: center; gap: 6px; padding: 9px 6px 0; margin-top: auto; color: #8696a6; border-top: 1px solid #e4ebf3; font-size: 8px; }
+.siuks-sidebar-foot small { margin-left: auto; color: #a2afbd; font-size: 8px; }
+.siuks-sidebar-status { width: 6px; height: 6px; background: #40b77a; border-radius: 50%; }
+.siuks-main { min-height: calc(100vh - 16px); margin-left: clamp(156px, 20vw, 232px); background: #f5f8fc; }
+.siuks-topbar { display: flex; height: 54px; align-items: center; justify-content: space-between; gap: 14px; padding: 0 17px; background: #fff; border-bottom: 1px solid #dfe8f1; }
+.siuks-search { display: flex; width: min(440px, 58%); height: 29px; align-items: center; gap: 7px; padding: 0 9px; color: #788ea3; background: #f8fafc; border: 1px solid #e0e8f0; border-radius: 5px; }
+.siuks-search svg { width: 13px; height: 13px; flex: 0 0 auto; }
+.siuks-search input { width: 100%; min-width: 0; color: #42566b; background: transparent; border: 0; outline: 0; font-size: 9px; }
+.siuks-search input::placeholder { color: #8a9bad; }
+.siuks-search kbd { flex: 0 0 auto; padding: 2px 4px; color: #8998a8; background: #fff; border: 1px solid #e3e9ef; border-radius: 3px; font: 8px Inter, sans-serif; }
+.siuks-top-actions { display: flex; align-items: center; gap: 15px; }
+.siuks-notification { position: relative; display: grid; width: 26px; height: 28px; place-items: center; color: #526b80; background: transparent; border: 0; cursor: pointer; }
+.siuks-notification svg { width: 17px; height: 17px; }
+.siuks-notification i { position: absolute; top: 0; right: -1px; display: grid; width: 12px; height: 12px; place-items: center; color: #fff; background: #e34f55; border: 1px solid white; border-radius: 50%; font-size: 7px; font-style: normal; }
+.siuks-admin { display: flex; align-items: center; gap: 7px; color: #445a6f; font-size: 9px; }
+.siuks-admin > span:last-child { color: #7f90a0; font-size: 11px; }
+.siuks-admin-avatar { display: grid; width: 22px; height: 22px; place-items: center; color: #61798f; background: #edf2f7; border-radius: 50%; }
+.siuks-admin-avatar svg { width: 15px; height: 15px; }
+.siuks-logout { display: flex; align-items: center; gap: 5px; padding-left: 11px; color: #43596e; border-left: 1px solid #e6ebf1; font-size: 9px; }
+.siuks-logout svg { width: 13px; height: 13px; }
+.siuks-content { max-width: 1500px; padding: 13px 16px 10px; margin: 0 auto; }
+.siuks-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.siuks-heading h1 { margin: 0 0 3px; color: #1e344a; font-size: 15px; font-weight: 700; letter-spacing: -.3px; }
+.siuks-heading p { margin: 0; color: #687e92; font-size: 9px; }
+.siuks-date { display: flex; height: 26px; align-items: center; gap: 6px; padding: 0 8px; color: #4e6276; background: white; border: 1px solid #dfe7ef; border-radius: 5px; font-size: 8px; white-space: nowrap; }
+.siuks-date svg { width: 12px; height: 12px; color: #526f88; }
+.siuks-stats-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-bottom: 9px; }
+.siuks-stat, .siuks-summary-card, .siuks-panel { background: #fff; border: 1px solid #dbe5ef; border-radius: 6px; box-shadow: 0 1px 2px #1a36500a; }
+.siuks-stat { display: flex; min-height: 55px; align-items: center; gap: 10px; padding: 8px 10px; }
+.siuks-stat-icon { display: grid; width: 27px; height: 27px; flex: 0 0 auto; place-items: center; border-radius: 5px; }
+.siuks-stat-icon svg { width: 17px; height: 17px; }
+.siuks-blue { color: #2678c6; background: #eaf3fc; }.siuks-slate { color: #566c81; background: #f0f4f8; }.siuks-red { color: #da4e59; background: #fff0f0; }
+.siuks-stat div, .siuks-summary-card div { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
+.siuks-stat div span, .siuks-summary-card div span { overflow: hidden; color: #4c6175; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.siuks-stat div strong, .siuks-summary-card div strong { color: #20374d; font-size: 16px; font-weight: 700; line-height: 1; }
+.siuks-summary-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-bottom: 9px; }
+.siuks-summary-card { display: flex; min-height: 53px; align-items: center; gap: 10px; padding: 8px 10px; }
+.siuks-summary-icon { display: grid; width: 27px; height: 27px; flex: 0 0 auto; place-items: center; border-radius: 5px; }
+.siuks-summary-icon svg { width: 17px; height: 17px; }
+.siuks-charts-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(260px, .95fr); gap: 8px; margin-bottom: 8px; }
+.siuks-panel { min-width: 0; padding: 9px 10px; }
+.siuks-panel h2 { margin: 0 0 8px; color: #30495f; font-size: 10px; font-weight: 700; letter-spacing: -.1px; }
+.siuks-line-chart { display: flex; height: 115px; gap: 6px; padding: 2px 4px 0 0; }
+.siuks-y-labels { display: flex; width: 19px; flex: 0 0 auto; flex-direction: column; justify-content: space-between; padding-bottom: 17px; color: #71869a; font-size: 7px; text-align: right; }
+.siuks-chart-body { position: relative; flex: 1; min-width: 0; height: 94px; }
+.siuks-chart-grid { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: space-between; }
+.siuks-chart-grid i { border-top: 1px solid #e9eef4; }
+.siuks-chart-body > svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.siuks-x-labels { position: absolute; top: calc(100% + 6px); right: -1px; left: -1px; display: flex; justify-content: space-between; color: #71869a; font-size: 7px; }
+.siuks-donut-wrap { display: flex; min-height: 107px; align-items: center; justify-content: space-around; gap: 12px; padding: 0 5px; }
+.siuks-donut { position: relative; display: grid; width: 104px; height: 104px; flex: 0 0 auto; place-items: center; background: conic-gradient(#287fe0 0 28%, #24b9cc 28% 50%, #ed777a 50% 68%, #f3c52e 68% 80%, #9b69d6 80% 90%, #aab9cc 90% 100%); border-radius: 50%; transform: rotate(-90deg); }
+.siuks-donut::before { position: absolute; width: 60px; height: 60px; background: #fff; border-radius: 50%; content: ''; }
+.siuks-donut > div { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; transform: rotate(90deg); }
+.siuks-donut > div span { color: #53697f; font-size: 8px; }.siuks-donut > div strong { color: #263d53; font-size: 13px; }
+.siuks-legend { display: grid; width: min(150px, 50%); gap: 7px; padding: 0; margin: 0; list-style: none; }
+.siuks-legend li { display: grid; grid-template-columns: 8px 1fr auto; align-items: center; gap: 6px; color: #53697e; font-size: 8px; }
+.siuks-legend li b { color: #344d64; font-size: 8px; font-weight: 500; }.siuks-legend li i { width: 7px; height: 7px; border-radius: 50%; }
+.dot-blue { background: #287fe0; }.dot-cyan { background: #24b9cc; }.dot-red { background: #ed777a; }.dot-yellow { background: #f3c52e; }.dot-purple { background: #9b69d6; }.dot-gray { background: #aab9cc; }
+.siuks-bottom-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(230px, .8fr); gap: 8px; }
+.siuks-activity-panel { padding-bottom: 7px; }.siuks-activity-panel h2, .siuks-quick-panel h2 { margin-bottom: 7px; }
+.siuks-table-scroll { overflow-x: auto; }.siuks-table-scroll table { width: 100%; border-collapse: collapse; text-align: left; }.siuks-table-scroll thead { background: #f0f5fa; }
+.siuks-table-scroll th { padding: 7px 8px; color: #465e74; font-size: 8px; font-weight: 600; }.siuks-table-scroll td { padding: 6px 8px; color: #435b71; border-bottom: 1px solid #eaf0f5; font-size: 8px; white-space: nowrap; }.siuks-table-scroll tbody tr:last-child td { border-bottom: 0; }
+.siuks-pill { display: inline-block; padding: 3px 7px; border-radius: 10px; font-size: 7px; }.pill-handled { color: #198051; background: #dff4e9; }.pill-done { color: #2768a3; background: #e3f0fc; }
+.siuks-quick-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.siuks-quick-grid a { display: flex; min-height: 28px; align-items: center; gap: 6px; padding: 4px 6px; color: #28659e; background: #f5f9fd; border: 1px solid #dfe9f3; border-radius: 5px; font-size: 7px; font-weight: 600; white-space: nowrap; }
+.siuks-quick-grid a:hover { background: #eaf4fc; }.siuks-quick-grid a > span { display: grid; width: 17px; height: 17px; flex: 0 0 auto; place-items: center; border-radius: 4px; }.siuks-quick-grid a svg { width: 12px; height: 12px; }
+.quick-blue { color: #277ac4; background: #e3f0fc; }.quick-red { color: #d94e59; background: #fdebec; }.siuks-quick-grid .quick-sos { grid-column: 1 / 2; color: #bd4d54; background: #fff6f6; border-color: #f3dada; }
+.siuks-footer { display: flex; justify-content: space-between; gap: 10px; padding: 9px 2px 0; color: #8798a9; font-size: 7px; }.siuks-footer span { text-align: right; }
+@media (min-width: 1400px) {
+    .siuks-content { padding: 20px 24px 14px; }.siuks-topbar { height: 62px; padding: 0 24px; }.siuks-stat { min-height: 68px; padding: 10px 14px; }.siuks-summary-card { min-height: 64px; padding: 10px 14px; }.siuks-panel { padding: 13px 14px; }.siuks-panel h2 { font-size: 12px; }.siuks-line-chart { height: 150px; }.siuks-chart-body { height: 126px; }.siuks-donut { width: 120px; height: 120px; }.siuks-donut::before { width: 70px; height: 70px; }.siuks-donut-wrap { min-height: 130px; }.siuks-table-scroll th, .siuks-table-scroll td { padding: 9px 10px; font-size: 9px; }.siuks-quick-grid a { min-height: 34px; font-size: 8px; }
+}
+@media (max-width: 640px) {
+    .siuks-sidebar { width: 62px; align-items: center; padding-right: 7px; padding-left: 7px; }.siuks-brand { padding-right: 0; padding-left: 0; }.siuks-brand-text, .siuks-nav-item span, .siuks-sidebar-foot { display: none; }.siuks-navigation { width: 100%; }.siuks-nav-item { justify-content: center; padding: 0; }.siuks-nav-item svg { width: 17px; height: 17px; }.siuks-main { margin-left: 62px; }.siuks-stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }.siuks-charts-grid, .siuks-bottom-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+    .siuks-sidebar { inset: 8px auto 8px 8px; width: 48px; padding: 9px 5px; }.siuks-brand-icon, .siuks-brand-icon svg { width: 28px; height: 31px; }.siuks-main { margin-left: 48px; }.siuks-topbar { height: 46px; padding: 0 8px; }.siuks-search { width: 55%; height: 27px; }.siuks-search kbd, .siuks-logout span, .siuks-admin > span:last-child { display: none; }.siuks-top-actions { gap: 7px; }.siuks-logout { padding-left: 7px; }.siuks-content { padding: 11px 8px 9px; }.siuks-heading { align-items: flex-start; flex-direction: column; }.siuks-stats-grid { gap: 6px; }.siuks-stat { min-height: 53px; gap: 7px; padding: 7px; }.siuks-stat div span, .siuks-summary-card div span { font-size: 8px; }.siuks-summary-grid { grid-template-columns: 1fr; gap: 6px; }.siuks-donut { width: 88px; height: 88px; }.siuks-donut::before { width: 52px; height: 52px; }.siuks-donut-wrap { gap: 7px; padding: 0; }.siuks-legend { gap: 6px; }.siuks-legend li { font-size: 7px; }.siuks-quick-grid a { white-space: normal; }.siuks-footer { flex-direction: column; }.siuks-footer span { text-align: left; }
+}
