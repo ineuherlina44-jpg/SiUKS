@@ -1,133 +1,122 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pemeriksaan Pasien UKS</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-slate-100 min-h-screen p-6">
+@extends('layouts.app')
 
-    <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-md p-6 border border-slate-200">
-        <div class="flex items-center justify-between mb-4 border-b pb-3">
-            <div>
-                <h2 class="text-xl font-bold text-slate-800">Form Pemeriksaan Pasien UKS</h2>
-                <p class="text-xs text-slate-500">Pencatatan keluhan, tindakan medis, dan pemberian obat</p>
-            </div>
-            <a href="{{ route('rekam-medis.index') }}" class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-2 rounded-lg font-semibold">
-                &larr; Riwayat Rekam Medis
-            </a>
+@content
+<div class="container my-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Form Pemeriksaan & Rekam Medis UKS</h5>
         </div>
+        <div class="card-body">
+            
+            @if(session('error'))
+                <div class="alert alert-danger">{{ session('error') }}</div>
+            @endif
 
-        {{-- Notifikasi Error / Peringatan --}}
-        @if(session('error'))
-            <div class="mb-4 p-3 bg-red-100 border border-red-300 text-red-700 text-xs rounded-xl font-semibold">
-                {{ session('error') }}
-            </div>
-        @endif
-
-        <form action="{{ route('rekam-medis.store') }}" method="POST" class="space-y-4">
-            @csrf
-
-            {{-- 1. Pilih Siswa --}}
-            <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1">Nama Siswa / Pasien:</label>
-                <select name="id_siswa" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-medium">
-                    <option value="">-- Pilih Siswa --</option>
-                    @foreach($siswaList as $s)
-                        <option value="{{ $s->id }}" {{ old('id_siswa') == $s->id ? 'selected' : '' }}>
-                            {{ $s->name }} (Kelas {{ $s->kelas }}) - Alergi: {{ $s->riwayat_alergi ?? 'Tidak Ada' }}
-                        </option>
-                    @endforeach
-                </select>
-                @error('id_siswa') <span class="text-red-500 text-[11px]">{{ $message }}</span> @enderror
-            </div>
-
-            {{-- 2. Keluhan & Diagnosa Penyakit --}}
-            <div class="grid grid-cols-2 gap-3">
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Keluhan Siswa:</label>
-                    <input type="text" name="keluhan" value="{{ old('keluhan') }}" placeholder="Contoh: Pusing mual, luka lecet" required
-                           class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs">
-                    @error('keluhan') <span class="text-red-500 text-[11px]">{{ $message }}</span> @enderror
+            @if ($errors->any())
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                        @foreach ($errors->all() as$error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
                 </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Diagnosa / Status Penyakit:</label>
-                    <input type="text" name="status_penyakit" value="{{ old('status_penyakit') }}" placeholder="Contoh: Sakit Kepala, Dispepsia" required
-                           class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs">
-                    @error('status_penyakit') <span class="text-red-500 text-[11px]">{{ $message }}</span> @enderror
-                </div>
-            </div>
+            @endif
 
-            {{-- 3. Tindakan Penanganan --}}
-            <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1">Tindakan Petugas UKS:</label>
-                <textarea name="tindakan" rows="2" placeholder="Contoh: Istirahat di bed UKS selama 20 menit dan kompres dahi" required
-                          class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs">{{ old('tindakan') }}</textarea>
-                @error('tindakan') <span class="text-red-500 text-[11px]">{{ $message }}</span> @enderror
-            </div>
+            <!-- Wajib enctype="multipart/form-data" untuk Upload File (S2-05) -->
+            <form action="{{ route('rekam-medis.store') }}" method="POST" enctype="multipart/form-data">
+                @csrf
 
-            {{-- 4. S2-04: Bagian Pemberian Obat & Live Badge Stok --}}
-            <div class="p-4 bg-teal-50 border border-teal-200 rounded-xl space-y-3">
-                <div class="flex items-center justify-between">
-                    <span class="text-xs font-bold text-teal-900">Pemberian Obat (Opsional)</span>
-                    <span id="stok_info" class="text-[11px] font-semibold text-teal-700 bg-teal-100 px-2 py-0.5 rounded-full">
-                        Pilih obat untuk cek stok
-                    </span>
+                <!-- Pilih Siswa -->
+                <div class="mb-3">
+                    <label for="id_siswa" class="form-label font-weight-bold">Siswa Pasien <span class="text-danger">*</span></label>
+                    <select name="id_siswa" id="id_siswa" class="form-select @error('id_siswa') is-invalid @enderror" required>
+                        <option value="">-- Pilih Siswa --</option>
+                        @foreach($siswaList as$siswa)
+                            <option value="{{ $siswa->id }}" {{ old('id_siswa') == $siswa->id ? 'selected' : '' }}>
+                                {{ $siswa->name }} (Kelas: {{ $siswa->kelas }}) - Alergi: {{$siswa->riwayat_alergi ?? 'Tidak Ada' }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
 
-                <div class="grid grid-cols-3 gap-3">
-                    <div class="col-span-2">
-                        <label class="block text-[11px] font-semibold text-slate-700 mb-1">Pilih Obat:</label>
-                        <select id="select_obat" name="id_obat" class="w-full bg-white border border-teal-300 rounded-lg p-2 text-xs">
-                            <option value="" data-stok="0" data-satuan="">-- Tidak Diberi Obat --</option>
-                            @foreach($obatList as $o)
-                                <option value="{{ $o->id }}" data-stok="{{ $o->stok_tersedia }}" data-satuan="{{ $o->satuan }}">
-                                    {{ $o->nama_obat }} (Tersedia: {{ $o->stok_tersedia }} {{ $o->satuan }})
+                <!-- Keluhan -->
+                <div class="mb-3">
+                    <label for="keluhan" class="form-label font-weight-bold">Keluhan Siswa <span class="text-danger">*</span></label>
+                    <textarea name="keluhan" id="keluhan" class="form-control @error('keluhan') is-invalid @enderror" rows="2" placeholder="Contoh: Pusing, mual setelah olahraga..." required>{{ old('keluhan') }}</textarea>
+                </div>
+
+                <!-- Status Penyakit / Diagnosa -->
+                <div class="mb-3">
+                    <label for="status_penyakit" class="form-label font-weight-bold">Diagnosa / Status Penyakit <span class="text-danger">*</span></label>
+                    <input type="text" name="status_penyakit" id="status_penyakit" class="form-control @error('status_penyakit') is-invalid @enderror" value="{{ old('status_penyakit') }}" placeholder="Contoh: Maag ringan / Dehidrasi" required>
+                </div>
+
+                <!-- Tindakan Medis -->
+                <div class="mb-3">
+                    <label for="tindakan" class="form-label font-weight-bold">Tindakan Penanganan <span class="text-danger">*</span></label>
+                    <textarea name="tindakan" id="tindakan" class="form-control @error('tindakan') is-invalid @enderror" rows="2" placeholder="Contoh: Istirahat di UKS, dikompres..." required>{{ old('tindakan') }}</textarea>
+                </div>
+
+                <!-- Upload Foto Kondisi Siswa (S2-05: Max 2MB) -->
+                <div class="mb-3 p-3 bg-light border rounded">
+                    <label for="foto_kondisi" class="form-label font-weight-bold">Upload Foto Kondisi/Luka Siswa <small class="text-muted">(Opsional, Maksimal 2MB - JPG/PNG)</small></label>
+                    <input type="file" name="foto_kondisi" id="foto_kondisi" class="form-control @error('foto_kondisi') is-invalid @enderror" accept="image/jpeg,image/png,image/jpg">
+                </div>
+
+                <hr>
+                <h6 class="fw-bold text-secondary">Pemberian Obat (Jika Ada)</h6>
+
+                <!-- Pilih Obat & Live Info Stok (S2-04) -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="id_obat" class="form-label">Obat</label>
+                        <select name="id_obat" id="id_obat" class="form-select">
+                            <option value="" data-stok="0">-- Tanpa Obat --</option>
+                            @foreach($obatList as$obat)
+                                <option value="{{ $obat->id }}" data-stok="{{ $obat->stok_tersedia }}" {{ old('id_obat') == $obat->id ? 'selected' : '' }}>
+                                    {{ $obat->nama_obat }} (Tersedia: {{$obat->stok_tersedia }})
                                 </option>
                             @endforeach
                         </select>
+                        <small id="info-stok" class="form-text text-info fw-bold mt-1 d-block"></small>
                     </div>
-                    <div>
-                        <label class="block text-[11px] font-semibold text-slate-700 mb-1">Dosis (Jumlah):</label>
-                        <input type="number" id="input_dosis" name="jumlah_dosis" min="1" placeholder="Dosis"
-                               class="w-full bg-white border border-teal-300 rounded-lg p-2 text-xs">
+
+                    <div class="col-md-6 mb-3">
+                        <label for="jumlah_dosis" class="form-label">Jumlah Dosis / Porsi</label>
+                        <input type="number" name="jumlah_dosis" id="jumlah_dosis" class="form-control" min="1" value="{{ old('jumlah_dosis', 1) }}">
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-[11px] font-semibold text-slate-700 mb-1">Aturan Pakai:</label>
-                    <input type="text" name="aturan_pakai" placeholder="Contoh: 1 tablet setelah makan"
-                           class="w-full bg-white border border-teal-300 rounded-lg p-2 text-xs">
+                <div class="mb-3">
+                    <label for="aturan_pakai" class="form-label">Aturan Pakai</label>
+                    <input type="text" name="aturan_pakai" id="aturan_pakai" class="form-control" placeholder="Contoh: 3x1 sesudah makan" value="{{ old('aturan_pakai') }}">
                 </div>
-            </div>
 
-            <button type="submit" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 rounded-xl text-xs shadow transition">
-                Simpan Pemeriksaan & Selesaikan
-            </button>
-        </form>
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="{{ route('rekam-medis.index') }}" class="btn btn-secondary">Batal</a>
+                    <button type="submit" class="btn btn-success">Simpan Pemeriksaan</button>
+                </div>
+            </form>
+        </div>
     </div>
+</div>
 
-    {{-- Script Live Stok (S2-04) --}}
-    <script>
-        const selectObat = document.getElementById('select_obat');
-        const inputDosis = document.getElementById('input_dosis');
-        const stokInfo   = document.getElementById('stok_info');
+<!-- JavaScript Live Check Stok Obat (S2-04) -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const selectObat = document.getElementById('id_obat');
+        const infoStok = document.getElementById('info-stok');
 
-        selectObat.addEventListener('change', function () {
-            const selected = this.options[this.selectedIndex];
-            const stok = parseInt(selected.getAttribute('data-stok') || 0);
-            const satuan = selected.getAttribute('data-satuan') || '';
-
-            if (this.value) {
-                stokInfo.innerText = `Sisa Stok Apotek: ${stok} ${satuan}`;
-                inputDosis.max = stok;
+        selectObat.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const stok = selectedOption.getAttribute('data-stok');
+            
+            if (this.value && stok !== null) {
+                infoStok.textContent = `Sisa stok obat di gudang: ${stok} unit`;
             } else {
-                stokInfo.innerText = 'Pilih obat untuk cek stok';
-                inputDosis.value = '';
+                infoStok.textContent = '';
             }
         });
-    </script>
-</body>
-</html>
-
+    });
+</script>
+@endsection

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class RekamMedisController extends Controller
 {
@@ -43,16 +44,17 @@ class RekamMedisController extends Controller
     }
 
     /**
-     * S2-03 & S2-06: Simpan Pemeriksaan & Potong Stok Obat dengan Database Transaction
+     * S2-03, S2-05, & S2-06: Simpan Pemeriksaan, Validasi Upload File & Potong Stok Obat dengan DB Transaction
      */
     public function store(Request $request)
     {
-        // 1. Validasi Input Sisi Server (S2-05)
+        // 1. Validasi Input Sisi Server (S2-05: Termasuk Upload File Foto Max 2MB)
         $validated = $request->validate([
             'id_siswa'        => 'required|exists:siswa,id',
             'keluhan'         => 'required|string|min:3',
             'status_penyakit' => 'required|string',
             'tindakan'        => 'required|string',
+            'foto_kondisi'    => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // Max 2MB (2048 KB)
             'id_obat'         => 'nullable|exists:obat,id',
             'jumlah_dosis'    => 'nullable|integer|min:1',
             'aturan_pakai'    => 'nullable|string',
@@ -61,12 +63,21 @@ class RekamMedisController extends Controller
             'keluhan.required'         => 'Keluhan siswa wajib diisi.',
             'status_penyakit.required' => 'Diagnosa penyakit wajib diisi.',
             'tindakan.required'        => 'Tindakan penanganan wajib diisi.',
+            'foto_kondisi.image'       => 'Berkas yang diunggah harus berupa gambar.',
+            'foto_kondisi.mimes'       => 'Format gambar harus JPEG, PNG, atau JPG.',
+            'foto_kondisi.max'         => 'Ukuran berkas foto tidak boleh lebih dari 2MB.',
         ]);
 
         // Ambil ID Petugas PMR yang sedang login
         $petugasId = DB::table('petugas_pmr')
             ->where('id_user', Auth::id())
-            ->value('id') ?? 1; // Fallback ke ID 1 jika sedang login sebagai Admin
+            ->value('id') ?? 1; // Fallback ke ID 1 jika login sebagai Admin
+
+        // Proses upload berkas foto jika ada file yang diunggah
+        $fotoPath = null;
+        if ($request->hasFile('foto_kondisi')) {
+            $fotoPath = $request->file('foto_kondisi')->store('foto_rekam_medis', 'public');
+        }
 
         // 2. Mulai Database Transaction (ACID - S2-06)
         DB::beginTransaction();
@@ -79,6 +90,7 @@ class RekamMedisController extends Controller
                 'keluhan'           => $validated['keluhan'],
                 'tindakan'          => $validated['tindakan'],
                 'status_penyakit'   => $validated['status_penyakit'],
+                'foto_kondisi'      => $fotoPath,
                 'status'            => 'diizinkan_pulang',
                 'created_at'        => now(),
                 'updated_at'        => now(),
@@ -90,7 +102,12 @@ class RekamMedisController extends Controller
 
                 // Cek ketersediaan stok obat (Pencegahan minus stok)
                 if ($obat->stok_tersedia < $validated['jumlah_dosis']) {
-                    DB::rollBack(); // Batalkan transaksi
+                    // Hapus foto jika transaksi dibatalkan
+                    if ($fotoPath) {
+                        Storage::disk('public')->delete($fotoPath);
+                    }
+
+                    DB::rollBack(); // Batalkan transaksi DB
                     return back()->withInput()->with('error', "Stok obat {$obat->nama_obat} tidak mencukupi! Sisa stok hanya: {$obat->stok_tersedia}");
                 }
 
@@ -110,14 +127,18 @@ class RekamMedisController extends Controller
                     ->decrement('stok_tersedia', $validated['jumlah_dosis']);
             }
 
-            // Jika semua query di atas sukses, simpan secara permanen
+            // Jika semua query sukses, simpan permanen
             DB::commit();
 
             return redirect()->route('rekam-medis.index')
                 ->with('success', 'Pemeriksaan siswa dan pemberian obat berhasil disimpan! Stok obat telah diperbarui.');
 
         } catch (\Exception $e) {
-            // Jika terjadi error, batalkan semua perubahan
+            // Jika terjadi error, hapus file foto & batalkan transaksi DB
+            if ($fotoPath) {
+                Storage::disk('public')->delete($fotoPath);
+            }
+
             DB::rollBack();
             return back()->withInput()->with('error', 'Gagal menyimpan pemeriksaan: ' . $e->getMessage());
         }
