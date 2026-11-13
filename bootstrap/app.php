@@ -16,6 +16,8 @@ return Application::configure(basePath: dirname(__DIR__))
         __DIR__.'/../app/Console/Commands',
     ])
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->trustProxies(at: '*');
+
         // Daftarkan alias middleware di dalam sini:
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,

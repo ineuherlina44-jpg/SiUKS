@@ -26,6 +26,13 @@ class AuthFormTest extends TestCase
             ->assertSee('placeholder="nama@contoh.com"', false);
     }
 
+    public function test_login_form_uses_https_when_behind_a_trusted_proxy(): void
+    {
+        $this->get('/login', ['X-Forwarded-Proto' => 'https'])
+            ->assertOk()
+            ->assertSee('action="https://localhost/login"', false);
+    }
+
     public function test_user_can_log_in_with_the_selected_role_and_identifier(): void
     {
         $user = User::create([
