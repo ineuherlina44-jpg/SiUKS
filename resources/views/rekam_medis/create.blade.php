@@ -60,7 +60,7 @@
             </div>
         @endif
 
-        <form action="{{ route('rekam-medis.store') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+        <form action="{{ route('rekam-medis.store') }}" method="POST" class="space-y-4">
             @csrf
 
             {{-- 1. Pilih Siswa --}}
@@ -154,17 +154,7 @@
                 @error('tindakan') <span class="text-[#D62839] text-[11px] mt-1 block">{{ $message }}</span> @enderror
             </div>
 
-            {{-- 4. Foto Kondisi Fisik (Opsional - S2-05) --}}
-            <div>
-                <label class="block text-xs font-bold text-[#17324D] mb-1.5">
-                    Dokumentasi Foto Kondisi Fisik Siswa <span class="text-[11px] text-slate-400 font-normal">(Opsional - Maks 2MB, JPG/PNG)</span>:
-                </label>
-                <input type="file" name="foto_kondisi" accept="image/jpeg,image/png,image/jpg"
-                       class="w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#EAF3FF] file:text-[#17324D] hover:file:bg-[#d6e7ff] file:cursor-pointer border border-slate-300 rounded-xl p-1 bg-white">
-                @error('foto_kondisi') <span class="text-[#D62839] text-[11px] mt-1 block">{{ $message }}</span> @enderror
-            </div>
-
-            {{-- 5. Bagian Pemberian Obat & Live Badge Stok (S2-04) --}}
+            {{-- 4. Bagian Pemberian Obat & Live Badge Stok (S2-04) --}}
             <div class="p-4 bg-[#EAF3FF]/70 border border-[#17324D]/15 rounded-2xl space-y-3">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">

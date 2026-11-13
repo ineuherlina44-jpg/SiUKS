@@ -26,8 +26,7 @@ Railway cocok untuk proyek ini karena dapat mendeteksi Laravel/PHP dari `compose
    ```
 
    Ganti `MySQL` pada referensi variabel jika nama service database berbeda. Karena deployment ini mempertahankan instalasi yang sudah ada, gunakan `APP_KEY` dari instalasi aplikasi saat ini. Hanya buat key baru untuk instalasi yang benar-benar baru; jangan commit atau bagikan nilainya.
-4. Pasang Railway Volume pada `/app/storage/app/private` agar foto rekam medis yang disimpan di private disk tetap ada setelah restart. Lihat [panduan Volume Railway](https://docs.railway.com/volumes).
-5. Setelah deploy dan migrasi sukses, masuk menggunakan akun admin yang sudah ada pada database sumber. Jalankan `php artisan siuks:admin:create` hanya jika database memang belum memiliki admin; command tersebut sengaja menolak membuat admin kedua.
+4. Setelah deploy dan migrasi sukses, masuk menggunakan akun admin yang sudah ada pada database sumber. Jalankan `php artisan siuks:admin:create` hanya jika database memang belum memiliki admin; command tersebut sengaja menolak membuat admin kedua.
 
 Railpack menjalankan aplikasi Laravel dengan document root `public/`; dukungan Laravel-nya juga mengoptimalkan aplikasi, membuat storage link, dan menjalankan migrasi saat startup secara default. Periksa deployment log untuk memastikan migrasi selesai. Jangan menambahkan perintah migrasi kedua tanpa alasan, dan jangan aktifkan `RAILPACK_SKIP_MIGRATIONS` untuk database baru.
 
@@ -39,7 +38,7 @@ Database yang sedang dipakai aplikasi berisi data yang perlu dipertahankan. Sebe
 2. Buat service MySQL Railway, lalu import backup ke database itu sebelum mengarahkan aplikasi ke sana.
 3. Pertahankan `APP_KEY` instalasi lama. Jangan jalankan `php artisan migrate:fresh`, seeder demo, atau menghapus tabel `migrations`.
 4. Deploy aplikasi dan pastikan migrasi yang masih pending selesai di log. Setelah itu, cocokkan jumlah record tabel utama dengan database sumber dan uji login sebelum mengalihkan pengguna.
-5. Simpan backup sampai verifikasi selesai. Foto rekam medis baru disimpan di private disk; jika memindahkan berkas lama, pastikan berkasnya ada di volume private dan tidak tersisa di area publik.
+5. Simpan backup sampai verifikasi selesai.
 
 Catatan skema: kode aplikasi saat ini tidak memakai `rooms` atau `reservations`, dan migrasinya tidak disertakan pada branch deploy ini. Jika backup database lama berisi tabel tersebut, data tetap ikut saat backup diimpor. Database baru tidak akan membuat tabel itu; jika fitur reservasi diperlukan nanti, tambahkan migrasi yang benar setelah skema diperiksa.
 

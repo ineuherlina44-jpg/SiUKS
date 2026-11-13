@@ -4,9 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class PmrRekamMedisTest extends TestCase
@@ -179,56 +177,4 @@ class PmrRekamMedisTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_medical_condition_photos_are_stored_on_private_disk(): void
-    {
-        Storage::fake('local');
-        Storage::fake('public');
-
-        $staffUser = User::create([
-            'name' => 'Petugas PMR',
-            'email' => 'pmr-photo@example.test',
-            'role' => 'petugas_pmr',
-            'password' => 'password123',
-        ]);
-        DB::table('petugas_pmr')->insert([
-            'id_user' => $staffUser->id,
-            'status_piket' => 'Aktif',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        $studentUser = User::create([
-            'name' => 'Siswa Foto',
-            'email' => 'siswa-photo@example.test',
-            'role' => 'siswa',
-            'password' => 'password123',
-        ]);
-        $studentId = DB::table('siswa')->insertGetId([
-            'id_user' => $studentUser->id,
-            'nisn' => '9988776655',
-            'kelas' => 'XI IPA 1',
-            'jenis_kelamin' => 'Perempuan',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        $this->actingAs($staffUser)
-            ->post(route('rekam-medis.store'), [
-                'id_siswa' => $studentId,
-                'keluhan' => 'Memar ringan',
-                'status_penyakit' => 'Memar',
-                'tindakan' => 'Kompres dingin',
-                'foto_kondisi' => UploadedFile::fake()->createWithContent(
-                    'condition.png',
-                    base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/tmcAAAAASUVORK5CYII=')
-                ),
-            ])
-            ->assertRedirect(route('rekam-medis.index'));
-
-        $fotoPath = DB::table('rekam_medis')->where('id_siswa', $studentId)->value('foto_kondisi');
-
-        $this->assertNotEmpty($fotoPath);
-        Storage::disk('local')->assertExists($fotoPath);
-        Storage::disk('public')->assertMissing($fotoPath);
-    }
 }
