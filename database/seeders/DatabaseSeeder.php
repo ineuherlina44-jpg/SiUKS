@@ -13,6 +13,12 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        if (! app()->environment('local', 'testing')) {
+            $this->command?->warn('Demo data skipped outside local/testing. Create the first admin with php artisan siuks:admin:create.');
+
+            return;
+        }
+
         $this->call([
             DemoDataSeeder::class,
         ]);

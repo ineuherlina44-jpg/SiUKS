@@ -106,7 +106,47 @@
                         <div class="pmr-form-grid pmr-treatment-grid">
                             <div class="pmr-field">
                                 <label for="status_penyakit">Status penyakit / diagnosis <span aria-hidden="true">*</span></label>
-                                <input id="status_penyakit" name="status_penyakit" type="text" value="{{ old('status_penyakit') }}" placeholder="Contoh: Demam" maxlength="150" required>
+                                <div style="display: flex; flex-direction: column; gap: 8px;">
+                                    <select id="select_status_penyakit" name="status_penyakit_select" required>
+                                        <option value="">-- Pilih Jenis Penyakit / Diagnosis --</option>
+                                        @php
+                                            $daftarPenyakit = [
+                                                'Pusing / Sakit Kepala',
+                                                'Maag / Nyeri Lambung (Dispepsia)',
+                                                'Demam / Meriang',
+                                                'Luka Lecet / Cedera Fisik Ringan',
+                                                'Kram Perut / Dismenore (Nyeri Haid)',
+                                                'Mual & Muntah',
+                                                'Flu / Batuk / Pilek',
+                                                'Diare / Gangguan Pencernaan',
+                                                'Sesak Napas Ringan / Asma',
+                                                'Pingsan / Kelelahan (Syncope)',
+                                                'Alergi / Gatal-gatal',
+                                                'Mimisan (Epistaksis)',
+                                                'Sakit Gigi',
+                                            ];
+                                            $selectedPenyakit = old('status_penyakit', '');
+                                            $isCustomPenyakit = !empty($selectedPenyakit) && !in_array($selectedPenyakit, $daftarPenyakit);
+                                        @endphp
+                                        @foreach ($daftarPenyakit as $penyakit)
+                                            <option value="{{ $penyakit }}" @selected($selectedPenyakit === $penyakit)>{{ $penyakit }}</option>
+                                        @endforeach
+                                        <option value="Lainnya" @selected($isCustomPenyakit || old('status_penyakit_select') === 'Lainnya')>Lainnya (Ketik Manual...)</option>
+                                    </select>
+
+                                    <div id="wrapper_penyakit_custom" style="{{ ($isCustomPenyakit || old('status_penyakit_select') === 'Lainnya') ? '' : 'display: none;' }}">
+                                        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+                                            <span style="font-size: 11px; font-weight: 700; color: #17324D;">Diagnosa Lainnya / Khusus:</span>
+                                            <span style="font-size: 10px; color: #D62839; font-weight: 600;">* Ketik secara spesifik</span>
+                                        </div>
+                                        <input id="input_penyakit_custom" name="status_penyakit_custom" type="text"
+                                               value="{{ $isCustomPenyakit ? $selectedPenyakit : old('status_penyakit_custom') }}"
+                                               placeholder="Contoh: Radang Amandel, Hipotensi, Nyeri Sendi..."
+                                               maxlength="150"
+                                               {{ ($isCustomPenyakit || old('status_penyakit_select') === 'Lainnya') ? 'required' : '' }}>
+                                    </div>
+                                    <input type="hidden" id="status_penyakit" name="status_penyakit" value="{{ $selectedPenyakit }}">
+                                </div>
                             </div>
                             <div class="pmr-field pmr-field-textarea">
                                 <label for="keluhan">Keluhan / gejala <span aria-hidden="true">*</span></label>
@@ -115,6 +155,47 @@
                             <div class="pmr-field pmr-field-textarea">
                                 <label for="tindakan">Tindakan / penanganan <span aria-hidden="true">*</span></label>
                                 <textarea id="tindakan" name="tindakan" rows="5" placeholder="Catat tindakan atau penanganan yang diberikan..." required>{{ old('tindakan') }}</textarea>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="pmr-form-section" aria-labelledby="pmr-medicine-section-title">
+                        <div class="pmr-form-section-heading">
+                            <span class="pmr-form-step">03</span>
+                            <div style="flex: 1;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                                    <div>
+                                        <h2 id="pmr-medicine-section-title">Pemberian obat UKS</h2>
+                                        <p>Pilih obat dari stok apotek UKS serta aturan pakainya (opsional).</p>
+                                    </div>
+                                    <span id="stok_info_pmr" style="font-size: 11px; font-weight: 700; color: #2E9B67; background: #EAF3FF; border: 1px solid rgba(46, 155, 103, 0.25); padding: 5px 12px; border-radius: 20px;">
+                                        Pilih obat untuk cek sisa stok
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pmr-form-grid">
+                            <div class="pmr-field" style="grid-column: span 2;">
+                                <label for="id_obat">Pilih obat apotek UKS</label>
+                                <select id="id_obat" name="id_obat">
+                                    <option value="" data-stok="0" data-satuan="">-- Tidak Diberi Obat (Hanya Istirahat / Penanganan Fisik) --</option>
+                                    @foreach ($medicines as $med)
+                                        <option value="{{ $med->id }}" @selected((string) old('id_obat') === (string) $med->id) data-stok="{{ $med->stok_tersedia }}" data-satuan="{{ $med->satuan }}">
+                                            {{ $med->nama_obat }} (Tersedia: {{ $med->stok_tersedia }} {{ $med->satuan }}) - [{{ $med->kategori }}]
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('id_obat') <small style="color: #D62839; font-size: 11px;">{{ $message }}</small> @enderror
+                            </div>
+                            <div class="pmr-field">
+                                <label for="jumlah_dosis">Jumlah / dosis</label>
+                                <input id="jumlah_dosis" name="jumlah_dosis" type="number" min="1" value="{{ old('jumlah_dosis') }}" placeholder="Misal: 1">
+                                @error('jumlah_dosis') <small style="color: #D62839; font-size: 11px;">{{ $message }}</small> @enderror
+                            </div>
+                            <div class="pmr-field">
+                                <label for="aturan_pakai">Aturan pakai / anjuran</label>
+                                <input id="aturan_pakai" name="aturan_pakai" type="text" value="{{ old('aturan_pakai') }}" placeholder="Contoh: 1 tablet setelah makan" maxlength="255">
+                                @error('aturan_pakai') <small style="color: #D62839; font-size: 11px;">{{ $message }}</small> @enderror
                             </div>
                         </div>
                     </section>
@@ -137,5 +218,138 @@
             </div>
         </main>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // 1. Logika Diagnosa Penyakit (Dropdown & Custom Input)
+            const selectPenyakit = document.getElementById('select_status_penyakit');
+            const wrapperCustom = document.getElementById('wrapper_penyakit_custom');
+            const inputCustom = document.getElementById('input_penyakit_custom');
+            const hiddenStatus = document.getElementById('status_penyakit');
+            const form = selectPenyakit ? selectPenyakit.closest('form') : null;
+
+            function syncStatus() {
+                if (!selectPenyakit) return;
+                if (selectPenyakit.value === 'Lainnya') {
+                    wrapperCustom.style.display = 'block';
+                    inputCustom.required = true;
+                    if (inputCustom.value.trim() !== '') {
+                        hiddenStatus.value = inputCustom.value.trim();
+                    }
+                } else {
+                    wrapperCustom.style.display = 'none';
+                    inputCustom.required = false;
+                    hiddenStatus.value = selectPenyakit.value;
+                }
+            }
+
+            if (selectPenyakit) {
+                selectPenyakit.addEventListener('change', function () {
+                    if (this.value === 'Lainnya') {
+                        wrapperCustom.style.display = 'block';
+                        inputCustom.required = true;
+                        inputCustom.focus();
+                        hiddenStatus.value = inputCustom.value.trim();
+                    } else {
+                        wrapperCustom.style.display = 'none';
+                        inputCustom.required = false;
+                        hiddenStatus.value = this.value;
+                    }
+                });
+
+                if (inputCustom) {
+                    inputCustom.addEventListener('input', function () {
+                        if (selectPenyakit.value === 'Lainnya') {
+                            hiddenStatus.value = this.value.trim();
+                        }
+                    });
+                }
+            }
+
+            // 2. Logika Pemilihan Obat & Live Info Stok Apotek
+            const selectObat = document.getElementById('id_obat');
+            const inputDosis = document.getElementById('jumlah_dosis');
+            const stokInfo = document.getElementById('stok_info_pmr');
+
+            function updateObatInfo() {
+                if (!selectObat || !stokInfo) return;
+                const selected = selectObat.options[selectObat.selectedIndex];
+                const stok = parseInt(selected ? selected.getAttribute('data-stok') : 0) || 0;
+                const satuan = (selected ? selected.getAttribute('data-satuan') : '') || '';
+
+                if (selectObat.value) {
+                    stokInfo.innerText = `Sisa Stok Apotek: ${stok} ${satuan}`;
+                    stokInfo.style.color = '#2E9B67';
+                    stokInfo.style.background = '#EAF3FF';
+                    stokInfo.style.borderColor = 'rgba(46, 155, 103, 0.4)';
+                    if (inputDosis) {
+                        inputDosis.max = stok;
+                        if (!inputDosis.value || parseInt(inputDosis.value) < 1) {
+                            inputDosis.value = 1;
+                        }
+                    }
+                } else {
+                    stokInfo.innerText = 'Pilih obat untuk cek sisa stok';
+                    stokInfo.style.color = '#17324D';
+                    stokInfo.style.background = '#EAF3FF';
+                    stokInfo.style.borderColor = 'rgba(23, 50, 77, 0.15)';
+                    if (inputDosis) {
+                        inputDosis.value = '';
+                        inputDosis.removeAttribute('max');
+                    }
+                }
+            }
+
+            if (selectObat) {
+                selectObat.addEventListener('change', updateObatInfo);
+                updateObatInfo();
+            }
+
+            // 3. Form Submit & Reset Event Listeners
+            if (form) {
+                form.addEventListener('submit', function (e) {
+                    if (selectPenyakit && selectPenyakit.value === 'Lainnya') {
+                        hiddenStatus.value = inputCustom.value.trim();
+                        if (!hiddenStatus.value) {
+                            e.preventDefault();
+                            inputCustom.focus();
+                            alert('Silakan ketik jenis diagnosis penyakit secara spesifik.');
+                            return;
+                        }
+                    } else if (selectPenyakit) {
+                        hiddenStatus.value = selectPenyakit.value;
+                    }
+
+                    if (selectObat && selectObat.value && inputDosis) {
+                        const dosisVal = parseInt(inputDosis.value) || 0;
+                        const selected = selectObat.options[selectObat.selectedIndex];
+                        const stok = parseInt(selected ? selected.getAttribute('data-stok') : 0) || 0;
+                        if (dosisVal < 1) {
+                            e.preventDefault();
+                            inputDosis.focus();
+                            alert('Silakan tentukan jumlah dosis obat yang diberikan (minimal 1).');
+                            return;
+                        }
+                        if (dosisVal > stok) {
+                            e.preventDefault();
+                            inputDosis.focus();
+                            alert(`Jumlah dosis (${dosisVal}) melebihi sisa stok apotek yang tersedia (${stok}).`);
+                            return;
+                        }
+                    }
+                });
+
+                form.addEventListener('reset', function () {
+                    setTimeout(function () {
+                        if (wrapperCustom) wrapperCustom.style.display = 'none';
+                        if (inputCustom) inputCustom.required = false;
+                        if (hiddenStatus) hiddenStatus.value = '';
+                        if (selectObat) updateObatInfo();
+                    }, 50);
+                });
+            }
+
+            syncStatus();
+        });
+    </script>
 </body>
 </html>

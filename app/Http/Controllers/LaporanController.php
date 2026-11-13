@@ -166,13 +166,6 @@ class LaporanController extends Controller
     {
         $this->authorizeAdmin($request);
         $filters = $this->medicalRecordFilters($request);
-        $dateTo = $filters['date_to'] ?? now()->toDateString();
-        $dateFrom = $filters['date_from'] ?? Carbon::parse($dateTo)->startOfMonth()->toDateString();
-        if (! isset($filters['date_to']) && $dateFrom > $dateTo) {
-            $dateTo = $dateFrom;
-        }
-        $filters['date_from'] = $dateFrom;
-        $filters['date_to'] = $dateTo;
 
         $records = $this->adminMedicalRecordQuery($filters)
             ->orderByDesc('rekam_medis.waktu_pemeriksaan')
@@ -203,13 +196,6 @@ class LaporanController extends Controller
     {
         $this->authorizeAdmin($request);
         $filters = $this->medicalRecordFilters($request);
-        $dateTo = $filters['date_to'] ?? now()->toDateString();
-        $dateFrom = $filters['date_from'] ?? Carbon::parse($dateTo)->startOfMonth()->toDateString();
-        if (! isset($filters['date_to']) && $dateFrom > $dateTo) {
-            $dateTo = $dateFrom;
-        }
-        $filters['date_from'] = $dateFrom;
-        $filters['date_to'] = $dateTo;
 
         $records = $this->adminMedicalRecordQuery($filters)
             ->orderByDesc('rekam_medis.waktu_pemeriksaan')
@@ -226,7 +212,12 @@ class LaporanController extends Controller
             $this->statusLabel($record->status),
         ])->all();
 
-        $period = Carbon::parse($dateFrom)->format('d-m-Y').' s.d. '.Carbon::parse($dateTo)->format('d-m-Y');
+        $period = match (true) {
+            isset($filters['date_from'], $filters['date_to']) => Carbon::parse($filters['date_from'])->format('d-m-Y').' s.d. '.Carbon::parse($filters['date_to'])->format('d-m-Y'),
+            isset($filters['date_from']) => 'Sejak '.Carbon::parse($filters['date_from'])->format('d-m-Y'),
+            isset($filters['date_to']) => 'Sampai '.Carbon::parse($filters['date_to'])->format('d-m-Y'),
+            default => 'Semua tanggal',
+        };
         $pdf = $this->makePdf('Riwayat Rekam Medis', $period, [
             'Tanggal',
             'Nama siswa',
@@ -236,7 +227,7 @@ class LaporanController extends Controller
             'Obat',
             'Status',
         ], $rows);
-        $filename = 'siuks-rekam-medis-'.Carbon::parse($dateFrom)->format('Ymd').'-'.Carbon::parse($dateTo)->format('Ymd').'.pdf';
+        $filename = 'siuks-rekam-medis-'.($filters['date_from'] ?? 'awal').'-'.($filters['date_to'] ?? 'akhir').'.pdf';
 
         return response($pdf, 200, [
             'Content-Type' => 'application/pdf',
@@ -269,7 +260,9 @@ class LaporanController extends Controller
                 $query->where(function ($query) use ($search): void {
                     $query->where('siswa_users.name', 'like', '%'.$search.'%')
                         ->orWhere('siswa.nisn', 'like', '%'.$search.'%')
-                        ->orWhere('rekam_medis.keluhan', 'like', '%'.$search.'%');
+                        ->orWhere('rekam_medis.keluhan', 'like', '%'.$search.'%')
+                        ->orWhere('rekam_medis.status_penyakit', 'like', '%'.$search.'%')
+                        ->orWhere('rekam_medis.tindakan', 'like', '%'.$search.'%');
                 });
             })
             ->when(! empty($filters['type']), fn ($query) => $query->where('rekam_medis.status_penyakit', $filters['type']))

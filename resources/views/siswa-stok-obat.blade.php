@@ -23,6 +23,7 @@
             </nav>
             <div class="student-sidebar-bottom"><span class="student-status-dot"></span>SiUKS aktif</div>
         </aside>
+        <button class="student-sidebar-backdrop" type="button" data-student-sidebar-backdrop aria-label="Tutup navigasi"></button>
         <main class="student-stock-main">
         <header class="student-stock-topbar">
             <button class="student-sidebar-toggle" type="button" data-student-sidebar-toggle aria-expanded="true" aria-label="Sembunyikan navigasi" title="Sembunyikan navigasi"><span aria-hidden="true">⋮</span></button>

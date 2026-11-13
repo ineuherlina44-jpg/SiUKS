@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Services\StudentImportService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -49,14 +50,23 @@ class AdminPmrController extends Controller
             $staff->where('petugas_pmr.status', $filters['status']);
         }
 
+        $classes = collect(
+            array_merge(
+                DB::table('siswa')->select('kelas')->union(DB::table('petugas_pmr')->whereNotNull('kelas')->select('kelas'))->orderBy('kelas')->pluck('kelas')->all(),
+                StudentImportService::getPresetClasses()
+            )
+        )
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values()
+            ->all();
+
         return view('admin-data-petugas-pmr', [
             'user' => $user,
             'filters' => $filters,
             'staff' => $staff->orderBy('users.name')->paginate(15)->withQueryString(),
-            'classes' => DB::table('siswa')->select('kelas')
-                ->union(DB::table('petugas_pmr')->whereNotNull('kelas')->select('kelas'))
-                ->orderBy('kelas')
-                ->pluck('kelas'),
+            'classes' => $classes,
             'totalStaff' => DB::table('petugas_pmr')->count(),
             'activeStaff' => DB::table('petugas_pmr')->where('status', 'Aktif')->count(),
             'assignedClasses' => DB::table('petugas_pmr')->whereNotNull('kelas')->distinct()->count('kelas'),

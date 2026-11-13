@@ -37,7 +37,13 @@
         </header>
 
         <div class="siuks-content">
-            <section class="siuks-heading"><div><h1>Data Siswa</h1><p>Kelola data siswa dan akun seluruh kelas</p></div><button class="siuks-student-add" type="button" data-open-admin-student-create>＋ Tambah siswa</button></section>
+            <section class="siuks-heading">
+                <div><h1>Data Siswa</h1><p>Kelola data siswa dan akun seluruh kelas</p></div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button class="siuks-student-add" style="background: #2E9B67; color: #fff; box-shadow: 0 4px 12px rgba(46, 155, 103, 0.25);" type="button" id="btn-open-admin-student-import">📥 Import Siswa per Kelas</button>
+                    <button class="siuks-student-add" type="button" data-open-admin-student-create>＋ Tambah manual</button>
+                </div>
+            </section>
 
             @if (session('status'))
                 <div class="siuks-student-notice notice-success" role="status">{{ session('status') }}</div>
@@ -48,6 +54,7 @@
             @if ($errors->any())
                 <div class="siuks-student-notice notice-error" role="alert">Periksa kembali data yang dimasukkan pada formulir.</div>
             @endif
+            @include('partials.student-import-credentials')
 
             <section class="siuks-student-stats" aria-label="Ringkasan data siswa">
                 <article class="siuks-stat"><span class="siuks-stat-icon siuks-blue" aria-hidden="true">♙</span><div><span>Total siswa</span><strong>{{ $totalStudents }}</strong></div></article>
@@ -105,6 +112,76 @@
             <div class="siuks-student-form-actions"><button type="button" data-close-admin-student-dialog>Batal</button><button type="submit">Simpan siswa</button></div>
         </form>
     </dialog>
+    <dialog class="siuks-student-dialog" id="admin-student-import-dialog" style="max-width: 520px;">
+        <form method="POST" action="{{ route('admin.siswa.import') }}" enctype="multipart/form-data" class="siuks-student-form">
+            @csrf
+            <div class="siuks-student-dialog-heading">
+                <div>
+                    <p style="color: #2E9B67; font-weight: 700;">Import Otomatis Siswa</p>
+                    <h2>Pilih Kelas &amp; Daftarkan Semua Siswa</h2>
+                </div>
+                <button type="button" class="btn-close-admin-import" aria-label="Tutup">×</button>
+            </div>
+
+            <div style="background: #EAF3FF; border: 1px solid rgba(23, 50, 77, 0.12); padding: 12px 14px; border-radius: 10px; margin-bottom: 14px;">
+                <p style="font-size: 11px; color: #17324D; margin: 0; line-height: 1.5;">
+                    💡 <strong>Otomatis Tanpa Input Manual:</strong> Pilih kelas untuk langsung mendaftarkan seluruh siswa kelas tersebut (lengkap dengan NISN, nama, jenis kelamin, dan akun login siswa).
+                </p>
+            </div>
+
+            <div style="display: flex; gap: 8px; margin-bottom: 14px;">
+                <label id="lbl_admin_type_class" style="flex: 1; display: flex; align-items: center; gap: 8px; padding: 10px; border: 2px solid #2E9B67; background: #fff; border-radius: 8px; cursor: pointer; font-size: 11px; font-weight: 700; color: #17324D;">
+                    <input type="radio" name="import_type" value="class" id="admin_import_type_class" @checked(in_array(config('app.env'), ['local', 'testing'], true)) @disabled(! in_array(config('app.env'), ['local', 'testing'], true))>
+                    <span>{{ in_array(config('app.env'), ['local', 'testing'], true) ? 'Pilih Kelas Otomatis' : 'Roster demo tidak tersedia di environment ini' }}</span>
+                </label>
+                <label id="lbl_admin_type_csv" style="flex: 1; display: flex; align-items: center; gap: 8px; padding: 10px; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 8px; cursor: pointer; font-size: 11px; font-weight: 700; color: #64748b;">
+                    <input type="radio" name="import_type" value="csv" id="admin_import_type_csv" @checked(! in_array(config('app.env'), ['local', 'testing'], true))>
+                    <span>Unggah File CSV</span>
+                </label>
+            </div>
+
+            <div id="admin_section_class">
+                <label>
+                    <span>Pilih Kelas yang Didaftarkan:</span>
+                    <select name="kelas" id="admin_select_class" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-weight: 700; color: #17324D;">
+                        <option value="">-- Pilih Kelas --</option>
+                        @foreach ($presetClasses as $cls)
+                            <option value="{{ $cls }}">{{ $cls }} (Kelas XII)</option>
+                        @endforeach
+                    </select>
+                </label>
+                <p style="font-size: 11px; color: #64748b; margin-top: 6px;">
+                    @if (! in_array(config('app.env'), ['local', 'testing'], true))
+                        Roster contoh dinonaktifkan di environment ini. Gunakan CSV berisi data siswa sekolah.
+                    @else
+                        Setiap akun baru mendapat password acak unik yang ditampilkan satu kali setelah impor.
+                    @endif
+                </p>
+            </div>
+
+            <div id="admin_section_csv" style="display: none;">
+                <label>
+                    <span>Unggah Berkas CSV Siswa:</span>
+                    <input type="file" name="csv_file" accept=".csv,text/csv" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 8px;">
+                </label>
+                <p style="font-size: 11px; color: #64748b;">Password acak tiap akun baru ditampilkan satu kali setelah impor; siswa wajib menggantinya saat login pertama.</p>
+                <div style="margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 10px; color: #64748b;">Format: nisn, nama, kelas, jenis_kelamin, riwayat_alergi</span>
+                    <a href="{{ route('admin.siswa.template') }}" style="font-size: 11px; font-weight: 700; color: #2E9B67; text-decoration: underline;" download>
+                        Unduh Template CSV
+                    </a>
+                </div>
+            </div>
+
+            <div class="siuks-student-form-actions" style="margin-top: 18px;">
+                <button type="button" class="btn-close-admin-import">Batal</button>
+                <button type="submit" style="background: #2E9B67; color: #fff; font-weight: 700; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer;">
+                    ⚡ Import &amp; Daftarkan Semua Siswa
+                </button>
+            </div>
+        </form>
+    </dialog>
+
     <dialog class="siuks-student-dialog" id="admin-student-edit-dialog" data-admin-student-dialog data-kind="edit">
         <form method="POST" class="siuks-student-form" data-admin-student-form data-old-name="{{ old('name') }}" data-old-email="{{ old('email') }}" data-old-nisn="{{ old('nisn') }}" data-old-class="{{ old('kelas') }}" data-old-gender="{{ old('jenis_kelamin') }}" data-old-allergies="{{ old('riwayat_alergi') }}">
             @csrf
@@ -119,5 +196,53 @@
         </form>
     </dialog>
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const importDialog = document.getElementById('admin-student-import-dialog');
+        const openBtn = document.getElementById('btn-open-admin-student-import');
+        const closeBtns = document.querySelectorAll('.btn-close-admin-import');
+
+        if (openBtn && importDialog) {
+            openBtn.addEventListener('click', function () {
+                importDialog.showModal();
+            });
+        }
+
+        closeBtns.forEach(btn => {
+            btn.addEventListener('click', function () {
+                if (importDialog) importDialog.close();
+            });
+        });
+
+        const rClass = document.getElementById('admin_import_type_class');
+        const rCsv = document.getElementById('admin_import_type_csv');
+        const sClass = document.getElementById('admin_section_class');
+        const sCsv = document.getElementById('admin_section_csv');
+        const lblClass = document.getElementById('lbl_admin_type_class');
+        const lblCsv = document.getElementById('lbl_admin_type_csv');
+
+        function toggleType() {
+            if (rClass && rClass.checked) {
+                sClass.style.display = 'block';
+                sCsv.style.display = 'none';
+                lblClass.style.borderColor = '#2E9B67';
+                lblClass.style.background = '#fff';
+                lblCsv.style.borderColor = '#cbd5e1';
+                lblCsv.style.background = '#f8fafc';
+            } else if (rCsv && rCsv.checked) {
+                sClass.style.display = 'none';
+                sCsv.style.display = 'block';
+                lblCsv.style.borderColor = '#2E9B67';
+                lblCsv.style.background = '#fff';
+                lblClass.style.borderColor = '#cbd5e1';
+                lblClass.style.background = '#f8fafc';
+            }
+        }
+
+        if (rClass) rClass.addEventListener('change', toggleType);
+        if (rCsv) rCsv.addEventListener('change', toggleType);
+        toggleType();
+    });
+</script>
 </body>
 </html>

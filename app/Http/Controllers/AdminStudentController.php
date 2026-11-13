@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Services\StudentImportService;
+use Illuminate\Support\Str;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -55,14 +57,71 @@ class AdminStudentController extends Controller
             ->paginate(15)
             ->withQueryString();
 
+        $classes = collect(
+            array_merge(
+                DB::table('siswa')->select('kelas')->distinct()->orderBy('kelas')->pluck('kelas')->all(),
+                StudentImportService::getPresetClasses()
+            )
+        )
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values()
+            ->all();
+
         return view('admin-data-siswa', [
             'user' => $user,
             'filters' => $filters,
             'students' => $students,
-            'classes' => DB::table('siswa')->select('kelas')->distinct()->orderBy('kelas')->pluck('kelas'),
+            'classes' => $classes,
             'totalStudents' => DB::table('siswa')->count(),
             'sickStudents' => DB::table('siswa')->whereExists($monthlyVisits())->count(),
             'totalClasses' => DB::table('siswa')->distinct()->count('kelas'),
+            'presetClasses' => StudentImportService::getPresetClasses(),
+        ]);
+    }
+
+    public function import(Request $request): RedirectResponse
+    {
+        $this->currentAdmin();
+        $validated = $request->validate([
+            'import_type' => ['required', 'in:class,csv'],
+            'kelas'       => ['required_if:import_type,class', 'nullable', 'string', 'max:100'],
+            'csv_file'    => ['required_if:import_type,csv', 'nullable', 'file', 'mimes:csv,txt', 'max:2048'],
+        ], [
+            'kelas.required_if' => 'Pilih kelas yang akan diimpor.',
+            'csv_file.required_if' => 'Unggah berkas CSV siswa.',
+            'csv_file.mimes' => 'Format berkas harus CSV (.csv).',
+            'csv_file.max' => 'Ukuran berkas CSV maksimal 2MB.',
+        ]);
+
+        try {
+            if ($validated['import_type'] === 'class') {
+                $result = StudentImportService::importRosterForClass($validated['kelas']);
+                return redirect()->route('admin.siswa.index')
+                    ->with('status', "Berhasil mendaftarkan seluruh siswa kelas {$result['class']} ({$result['imported']} siswa baru terdaftar, {$result['updated']} diperbarui).")
+                    ->with('import_credentials', $result['credentials']);
+            } else {
+                $result = StudentImportService::importFromCsv($request->file('csv_file'), $request->input('kelas'));
+                return redirect()->route('admin.siswa.index')
+                    ->with('status', "Berhasil mengimpor data siswa dari berkas CSV ({$result['imported']} siswa baru, {$result['updated']} diperbarui).")
+                    ->with('import_credentials', $result['credentials']);
+            }
+        } catch (\Throwable $e) {
+            return redirect()->route('admin.siswa.index')
+                ->with('error', 'Gagal mengimpor data siswa: ' . $e->getMessage());
+        }
+    }
+
+    public function downloadTemplate(Request $request)
+    {
+        $this->currentAdmin();
+        $kelas = $request->query('kelas', 'RPL 1');
+        $csv = StudentImportService::generateSampleCsv($kelas);
+
+        return response($csv, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="template_siswa_' . Str::slug($kelas) . '.csv"',
         ]);
     }
 

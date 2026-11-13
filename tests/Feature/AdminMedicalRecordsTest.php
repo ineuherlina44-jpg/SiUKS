@@ -54,6 +54,28 @@ class AdminMedicalRecordsTest extends TestCase
             ->assertDontSee('Siswa Lain');
     }
 
+    public function test_admin_sees_all_medical_records_by_default_and_can_search_diagnosis(): void
+    {
+        $admin = $this->createUser('Admin', 'admin@example.test', 'admin');
+        $staffId = $this->createStaff();
+        $studentId = $this->createStudent('Siswa Catatan Lama', '4000000004', 'XI IPA 1');
+        $visitDate = now()->subMonth()->format('Y-m-d H:i:s');
+        $this->createRecord($studentId, $staffId, $visitDate, 'Diagnosis Khusus', 'Keluhan berulang', 'dirawat');
+
+        $this->actingAs($admin)
+            ->get(route('admin.rekam-medis.index'))
+            ->assertOk()
+            ->assertSee('Siswa Catatan Lama')
+            ->assertSee('Diagnosis Khusus')
+            ->assertSee('Keluhan berulang');
+
+        $this->actingAs($admin)
+            ->get(route('admin.rekam-medis.index', ['search' => 'Diagnosis Khusus']))
+            ->assertOk()
+            ->assertSee('Siswa Catatan Lama')
+            ->assertSee('Diagnosis Khusus');
+    }
+
     public function test_admin_can_download_pdf_matching_selected_medical_record_filters(): void
     {
         $admin = $this->createUser('Admin', 'admin@example.test', 'admin');
@@ -76,6 +98,22 @@ class AdminMedicalRecordsTest extends TestCase
         $this->assertStringStartsWith('%PDF-1.4', $response->getContent());
         $this->assertStringContainsString('Siswa PDF', $response->getContent());
         $this->assertStringContainsString('Lutut terkilir', $response->getContent());
+    }
+
+    public function test_admin_pdf_includes_records_outside_the_current_month_by_default(): void
+    {
+        $admin = $this->createUser('Admin', 'admin@example.test', 'admin');
+        $staffId = $this->createStaff();
+        $studentId = $this->createStudent('Siswa PDF Lama', '4000000005', 'XI IPA 1');
+        $this->createRecord($studentId, $staffId, now()->subMonth()->format('Y-m-d H:i:s'), 'Cedera', 'Pergelangan terkilir', 'rujukan');
+
+        $response = $this->actingAs($admin)
+            ->get(route('admin.rekam-medis.download'))
+            ->assertOk()
+            ->assertHeader('Content-Type', 'application/pdf');
+
+        $this->assertStringContainsString('Siswa PDF Lama', $response->getContent());
+        $this->assertStringContainsString('Semua tanggal', $response->getContent());
     }
 
     public function test_non_admin_cannot_view_or_export_medical_records(): void

@@ -12,6 +12,13 @@
     --siuks-border: #DCE6F0;
     --siuks-green-soft: #EAF6EF;
 }
+.siuks-breadcrumbs { padding: 0 16px; margin: 10px auto 0; color: var(--siuks-muted); font-size: 12px; }
+.siuks-breadcrumbs ol { display: flex; flex-wrap: wrap; gap: 8px; padding: 0; margin: 0; list-style: none; }
+.siuks-breadcrumbs a:hover { color: var(--siuks-primary); text-decoration: underline; }
+button[aria-busy="true"] { cursor: wait; opacity: .76; }
+button[aria-busy="true"]::before { display: inline-block; width: .9em; height: .9em; margin-right: .5em; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: siuks-spin .7s linear infinite; content: ""; vertical-align: -.1em; }
+@keyframes siuks-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { button[aria-busy="true"]::before { animation-duration: 1.5s; } }
 .siuks-body { margin: 0; min-width: 320px; color: var(--siuks-navy); background: var(--siuks-blue-soft); font-family: Inter, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
 .siuks-body * { box-sizing: border-box; }
 .siuks-body button, .siuks-body input { font: inherit; }
@@ -261,11 +268,12 @@
     .siuks-student-filters input, .siuks-student-filters select { min-height: 32px; }
 }
 
-.student-dashboard { min-width: 320px; min-height: 100vh; margin: 0; color: var(--siuks-navy); background: var(--siuks-blue-soft); font-family: Inter, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+.student-dashboard { min-width: 320px; min-height: 100vh; margin: 0; overflow-x: hidden; color: var(--siuks-navy); background: var(--siuks-blue-soft); font-family: Inter, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
 .student-dashboard * { box-sizing: border-box; }
 .student-dashboard button, .student-dashboard input { font: inherit; }
 .student-dashboard a { color: inherit; text-decoration: none; }
 .student-app { display: flex; min-height: 100vh; }
+.student-sidebar-backdrop { display: none; }
 .student-app.sidebar-collapsed .student-sidebar,
 .student-stock-app.sidebar-collapsed .student-sidebar,
 .student-history-app.sidebar-collapsed .student-sidebar { display: none; }
@@ -358,10 +366,114 @@
 .stock-available { color: #238964; }
 .student-footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 16px 0 0; color: var(--siuks-muted); font-size: 12px; }
 .student-footer span { color: var(--siuks-muted); }
+@media (max-width: 640px) {
+    .student-app, .student-stock-app, .student-history-app { width: 100%; min-width: 0; }
+    .student-sidebar {
+        position: fixed;
+        z-index: 5;
+        inset: 0 auto 0 0;
+        width: min(250px, 82vw);
+        height: 100vh;
+        height: 100dvh;
+        overflow-y: auto;
+        padding: 18px 14px;
+        box-shadow: 12px 0 30px rgba(30, 51, 72, .14);
+        transition: transform .2s ease;
+    }
+    .student-app:not(.sidebar-collapsed) .student-sidebar,
+    .student-stock-app:not(.sidebar-collapsed) .student-sidebar,
+    .student-history-app:not(.sidebar-collapsed) .student-sidebar { display: flex; }
+    .student-app:not(.sidebar-collapsed) .student-sidebar-backdrop,
+    .student-stock-app:not(.sidebar-collapsed) .student-sidebar-backdrop,
+    .student-history-app:not(.sidebar-collapsed) .student-sidebar-backdrop {
+        position: fixed;
+        z-index: 4;
+        inset: 0;
+        display: block;
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        background: rgba(23, 50, 77, .35);
+        border: 0;
+        cursor: pointer;
+    }
+    .student-main, .student-stock-main, .student-history-main { width: 100%; min-width: 0; }
+    .student-topbar { position: sticky; z-index: 3; top: 0; min-height: 62px; gap: 8px; padding: 9px 12px; }
+    .student-stock-topbar { position: sticky; z-index: 3; top: 0; min-height: 62px; gap: 8px; padding: 9px 12px; }
+    .student-context { min-width: 0; flex: 1; }
+    .student-context span { display: none; }
+    .student-context strong { overflow: hidden; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
+    .student-stock-context { min-width: 0; flex: 1; margin-right: 0; }
+    .student-stock-context span { display: none; }
+    .student-stock-context strong { display: block; overflow: hidden; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
+    .student-account { flex-shrink: 0; gap: 6px; }
+    .student-stock-account { flex-shrink: 0; gap: 6px; }
+    .student-account-name { display: none; }
+    .student-stock-name { display: none; }
+    .student-avatar { width: 30px; height: 30px; font-size: 12px; }
+    .student-logout { min-width: 36px; justify-content: center; padding: 7px 8px; }
+    .student-logout span { display: none; }
+    .student-stock-logout { padding: 7px 8px; }
+    .student-sidebar-toggle { width: 34px; height: 34px; font-size: 18px; }
+    .student-app:not(.sidebar-collapsed) .student-sidebar-toggle,
+    .student-stock-app:not(.sidebar-collapsed) .student-sidebar-toggle,
+    .student-history-app:not(.sidebar-collapsed) .student-sidebar-toggle {
+        position: fixed;
+        z-index: 7;
+        top: 10px;
+        left: calc(min(82vw, 250px) - 46px);
+        color: var(--siuks-primary);
+        background: #fff;
+    }
+    .student-content { width: 100%; min-width: 0; padding: 16px 14px 20px; }
+    .student-welcome { align-items: flex-start; flex-direction: column; gap: 12px; padding: 18px; margin-bottom: 12px; }
+    .student-welcome h1 { font-size: clamp(24px, 7vw, 32px); }
+    .student-welcome p { font-size: 13px; }
+    .student-class { min-width: 0; min-height: 32px; padding: 7px 11px; }
+    .student-emergency { align-items: stretch; flex-direction: column; gap: 14px; padding: 16px; margin-bottom: 12px; }
+    .student-emergency p { line-height: 1.5; }
+    .student-sos-button { width: 100%; min-width: 0; }
+    .student-alert-section { padding: 14px; margin-bottom: 12px; }
+    .student-section-heading { gap: 8px; }
+    .student-section-heading h2 { font-size: 17px; }
+    .student-section-heading p { line-height: 1.45; }
+    .student-alert-row { grid-template-columns: auto minmax(0, 1fr); gap: 8px; padding: 10px; }
+    .student-response { grid-column: 2; justify-self: start; }
+    .student-metrics { grid-template-columns: 1fr; gap: 8px; margin-bottom: 12px; }
+    .student-metric { gap: 11px; padding: 12px; border-radius: 12px; }
+    .student-metric-icon { width: 36px; height: 36px; }
+    .student-metric strong { font-size: 22px; }
+    .student-panels { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+    .student-panel { min-width: 0; padding: 14px; }
+    .student-table-wrap { width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; }
+    .student-table { min-width: 560px; }
+    .student-footer { align-items: flex-start; flex-direction: column; gap: 5px; padding-top: 12px; font-size: 11px; }
+    .student-stock-content, .student-history-content { width: 100%; min-width: 0; padding: 18px 14px 20px; }
+    .student-stock-heading, .student-history-heading { align-items: flex-start; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+    .student-stock-summary { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+    .student-stock-table-wrap { width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; }
+    .student-stock-table { min-width: 520px; }
+    .student-stock-panel-heading { align-items: flex-start; gap: 8px; padding: 14px; }
+    .student-stock-panel-heading > div { min-width: 0; }
+    .student-stock-panel-heading h2 { font-size: 14px; }
+    .student-stock-count { flex: 0 0 auto; }
+    .student-stock-footer { align-items: flex-start; flex-direction: column; gap: 5px; }
+    .student-stock-footer span { text-align: left; }
+}
+@media (max-width: 420px) {
+    .student-content { padding-right: 12px; padding-left: 12px; }
+    .student-welcome { padding: 16px; }
+    .student-alert-section, .student-panel { border-radius: 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .student-sidebar { transition: none; }
+}
 
-.student-stock-page { min-width: 320px; min-height: 100vh; margin: 0; color: var(--siuks-navy); background: var(--siuks-blue-soft); font-family: Inter, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+.student-stock-page, .student-history-page { min-width: 320px; min-height: 100vh; margin: 0; overflow-x: hidden; color: var(--siuks-navy); background: var(--siuks-blue-soft); font-family: Inter, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
 .student-stock-page * { box-sizing: border-box; }
+.student-history-page * { box-sizing: border-box; }
 .student-stock-page a { color: inherit; text-decoration: none; }
+.student-history-page a { color: inherit; text-decoration: none; }
 .student-stock-app, .student-history-app { display: flex; min-height: 100vh; }
 .student-stock-main, .student-history-main { min-width: 0; flex: 1; }
 .student-stock-topbar { display: flex; min-height: 68px; align-items: center; gap: 16px; padding: 12px 24px; background: #fff; border-bottom: 1px solid var(--siuks-border); }
@@ -843,7 +955,8 @@
 .wali-brand strong { color: var(--siuks-navy); font-size: 18px; }
 .wali-brand small { color: var(--siuks-muted); font-size: 10px; }
 .wali-navigation { display: grid; gap: 7px; padding-top: 14px; border-top: 1px solid var(--siuks-border); }
-.wali-nav-item { display: flex; min-height: 42px; align-items: center; gap: 11px; padding: 0 12px; color: var(--siuks-muted); border-radius: 9px; font-size: 12px; font-weight: 600; transition: color .15s, background .15s; }
+.wali-nav-item { display: flex; width: 100%; min-height: 42px; align-items: center; gap: 11px; padding: 0 12px; color: var(--siuks-muted); background: transparent; border: 0; border-radius: 9px; font-size: 12px; font-weight: 600; text-align: left; text-decoration: none; transition: color .15s, background .15s; }
+.wali-navigation button.wali-nav-item { cursor: pointer; }
 .wali-nav-item > span { display: inline-grid; width: 20px; place-items: center; color: var(--siuks-muted); font-size: 16px; }
 .wali-nav-item:hover { color: var(--siuks-primary); background: var(--siuks-blue-soft); }
 .wali-nav-item.is-active { color: var(--siuks-primary); background: var(--siuks-pink); }
@@ -919,6 +1032,10 @@
 .wali-empty { padding: 27px 15px !important; color: var(--siuks-muted) !important; text-align: center; }
 .wali-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 17px 2px 0; color: var(--siuks-muted); font-size: 10px; }
 .wali-footer span { color: var(--siuks-muted); }
+.wali-view-panel { display: none; }
+.wali-view-panel.is-active { display: block; animation: wali-panel-in .18s ease-out; }
+@keyframes wali-panel-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .wali-view-panel.is-active { animation: none; } }
 .wali-app.sidebar-collapsed .wali-sidebar { display: none; }
 .wali-app.sidebar-collapsed .wali-main { margin-left: 0; }
 @media (max-width: 1050px) {
@@ -1098,4 +1215,42 @@
     .siuks-medical-filters label:first-child { grid-column: span 2; }
     .siuks-medical-filters button { grid-column: span 2; }
     .siuks-medical-heading .siuks-student-add { width: 100%; }
+}
+
+.siuks-student-page .siuks-main { background: linear-gradient(180deg, #f8fbff 0%, var(--siuks-blue-soft) 100%); }
+.siuks-student-page .siuks-topbar { position: sticky; z-index: 3; top: 0; background: rgba(255, 255, 255, .94); backdrop-filter: blur(12px); }
+.siuks-student-page .siuks-heading h1 { font-size: clamp(22px, 2.4vw, 30px); }
+.siuks-student-page .siuks-heading p { font-size: 11px; }
+.siuks-student-page .siuks-student-stats .siuks-stat,
+.siuks-student-page .siuks-student-panel { border-color: #e4ebf3; border-radius: 13px; box-shadow: 0 8px 24px rgba(30, 55, 80, .045); }
+.siuks-student-page .siuks-student-panel-heading h2 { font-size: 14px; }
+.siuks-student-page .siuks-student-filters label > span { font-size: 9px; }
+.siuks-student-page .siuks-student-filters input,
+.siuks-student-page .siuks-student-filters select { font-size: 11px; }
+.siuks-student-page .siuks-student-table th { font-size: 9px; }
+.siuks-student-page .siuks-student-table td { font-size: 10px; }
+.siuks-student-page .siuks-student-table td strong { font-size: 10px; }
+.siuks-student-page .siuks-student-add,
+.siuks-student-page .siuks-student-filter-submit { min-height: 36px; border-radius: 8px; font-size: 10px; transition: background .15s, box-shadow .15s, transform .15s; }
+.siuks-student-page .siuks-student-add:hover,
+.siuks-student-page .siuks-student-filter-submit:hover { box-shadow: 0 5px 14px rgba(214, 40, 57, .16); transform: translateY(-1px); }
+.siuks-student-page button:focus-visible,
+.student-stock-page button:focus-visible,
+.student-history-page button:focus-visible,
+.wali-dashboard button:focus-visible { outline: 3px solid rgba(214, 40, 57, .24); outline-offset: 2px; }
+.student-stock-summary article,
+.student-stock-panel { border-color: #e4ebf3; border-radius: 13px; box-shadow: 0 8px 24px rgba(30, 55, 80, .045); }
+.student-stock-summary article { transition: transform .16s ease, box-shadow .16s ease; }
+.student-stock-summary article:hover { box-shadow: 0 12px 26px rgba(30, 55, 80, .08); transform: translateY(-2px); }
+.student-stock-table tbody tr { transition: background .15s ease; }
+.student-stock-table tbody tr:hover { background: #f8fbff; }
+.wali-overview-card,
+.wali-panel { border-color: #e4ebf3; box-shadow: 0 8px 24px rgba(30, 55, 80, .045); }
+.wali-overview-card { transition: transform .16s ease, box-shadow .16s ease; }
+.wali-overview-card:hover { box-shadow: 0 12px 26px rgba(30, 55, 80, .08); transform: translateY(-2px); }
+@media (prefers-reduced-motion: reduce) {
+    .student-stock-summary article,
+    .wali-overview-card { transition: none; }
+    .student-stock-summary article:hover,
+    .wali-overview-card:hover { transform: none; }
 }

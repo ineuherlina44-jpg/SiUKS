@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
+use RuntimeException;
 
 class RekamMedisController extends Controller
 {
@@ -29,6 +31,8 @@ class RekamMedisController extends Controller
      */
     public function create()
     {
+        abort_unless(Auth::user()?->role === 'petugas_pmr', 403);
+
         // Mengambil daftar siswa
         $siswaList = DB::table('siswa')
             ->join('users', 'siswa.id_user', '=', 'users.id')
@@ -48,16 +52,28 @@ class RekamMedisController extends Controller
      */
     public function store(Request $request)
     {
+        if ($request->input('status_penyakit_select') === 'Lainnya') {
+            $request->merge([
+                'status_penyakit' => $request->input('status_penyakit_custom') ?: $request->input('status_penyakit')
+            ]);
+        } elseif ($request->filled('status_penyakit_select')) {
+            $request->merge([
+                'status_penyakit' => $request->input('status_penyakit_select')
+            ]);
+        }
+
         // 1. Validasi Input Sisi Server (S2-05: Termasuk Upload File Foto Max 2MB)
+        abort_unless(Auth::user()?->role === 'petugas_pmr', 403);
+
         $validated = $request->validate([
             'id_siswa'        => 'required|exists:siswa,id',
-            'keluhan'         => 'required|string|min:3',
-            'status_penyakit' => 'required|string',
-            'tindakan'        => 'required|string',
-            'foto_kondisi'    => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // Max 2MB (2048 KB)
+            'keluhan'         => 'required|string|min:3|max:5000',
+            'status_penyakit' => 'required|string|max:255',
+            'tindakan'        => 'required|string|max:5000',
+            'foto_kondisi'    => 'nullable|image|mimes:jpeg,png,jpg|mimetypes:image/jpeg,image/png|max:2048',
             'id_obat'         => 'nullable|exists:obat,id',
-            'jumlah_dosis'    => 'nullable|integer|min:1',
-            'aturan_pakai'    => 'nullable|string',
+            'jumlah_dosis'    => 'required_with:id_obat|nullable|integer|min:1',
+            'aturan_pakai'    => 'nullable|string|max:255',
         ], [
             'id_siswa.required'        => 'Pilih siswa yang diperiksa.',
             'keluhan.required'         => 'Keluhan siswa wajib diisi.',
@@ -71,76 +87,71 @@ class RekamMedisController extends Controller
         // Ambil ID Petugas PMR yang sedang login
         $petugasId = DB::table('petugas_pmr')
             ->where('id_user', Auth::id())
-            ->value('id') ?? 1; // Fallback ke ID 1 jika login sebagai Admin
+            ->value('id');
+        abort_unless($petugasId, 403);
 
-        // Proses upload berkas foto jika ada file yang diunggah
         $fotoPath = null;
-        if ($request->hasFile('foto_kondisi')) {
-            $fotoPath = $request->file('foto_kondisi')->store('foto_rekam_medis', 'public');
-        }
 
-        // 2. Mulai Database Transaction (ACID - S2-06)
-        DB::beginTransaction();
         try {
-            // A. Simpan data ke tabel rekam_medis
-            $recordId = DB::table('rekam_medis')->insertGetId([
-                'id_siswa'          => $validated['id_siswa'],
-                'id_petugas'        => $petugasId,
-                'waktu_pemeriksaan' => now(),
-                'keluhan'           => $validated['keluhan'],
-                'tindakan'          => $validated['tindakan'],
-                'status_penyakit'   => $validated['status_penyakit'],
-                'foto_kondisi'      => $fotoPath,
-                'status'            => 'diizinkan_pulang',
-                'created_at'        => now(),
-                'updated_at'        => now(),
-            ]);
+            DB::transaction(function () use ($validated, $request, $petugasId, &$fotoPath): void {
+                $obat = null;
+                if (! empty($validated['id_obat']) && ! empty($validated['jumlah_dosis'])) {
+                    $obat = DB::table('obat')
+                        ->where('id', $validated['id_obat'])
+                        ->lockForUpdate()
+                        ->first();
 
-            // B. Jika ada obat yang diberikan kepada siswa
-            if (!empty($validated['id_obat']) && !empty($validated['jumlah_dosis'])) {
-                $obat = DB::table('obat')->where('id', $validated['id_obat'])->first();
-
-                // Cek ketersediaan stok obat (Pencegahan minus stok)
-                if ($obat->stok_tersedia < $validated['jumlah_dosis']) {
-                    // Hapus foto jika transaksi dibatalkan
-                    if ($fotoPath) {
-                        Storage::disk('public')->delete($fotoPath);
+                    if (! $obat || $obat->stok_tersedia < $validated['jumlah_dosis']) {
+                        throw ValidationException::withMessages([
+                            'id_obat' => 'Stok obat tidak mencukupi. Silakan periksa stok yang tersedia.',
+                        ]);
                     }
-
-                    DB::rollBack(); // Batalkan transaksi DB
-                    return back()->withInput()->with('error', "Stok obat {$obat->nama_obat} tidak mencukupi! Sisa stok hanya: {$obat->stok_tersedia}");
                 }
 
-                // Catat ke detail_pemberian_obat
-                DB::table('detail_pemberian_obat')->insert([
-                    'id_rekam_medis' => $recordId,
-                    'id_obat'        => $validated['id_obat'],
-                    'jumlah_dosis'   => $validated['jumlah_dosis'],
-                    'aturan_pakai'   => $validated['aturan_pakai'] ?? '1x sehari setelah makan',
-                    'created_at'     => now(),
-                    'updated_at'     => now(),
+                if ($request->hasFile('foto_kondisi')) {
+                    $fotoPath = $request->file('foto_kondisi')->store('foto_rekam_medis', 'local');
+                    if (! $fotoPath) {
+                        throw new RuntimeException('Gagal menyimpan foto kondisi siswa.');
+                    }
+                }
+
+                $recordId = DB::table('rekam_medis')->insertGetId([
+                    'id_siswa'          => $validated['id_siswa'],
+                    'id_petugas'        => $petugasId,
+                    'waktu_pemeriksaan' => now(),
+                    'keluhan'           => $validated['keluhan'],
+                    'tindakan'           => $validated['tindakan'],
+                    'status_penyakit'   => $validated['status_penyakit'],
+                    'foto_kondisi'      => $fotoPath,
+                    'status'            => 'diizinkan_pulang',
+                    'created_at'        => now(),
+                    'updated_at'        => now(),
                 ]);
 
-                // Kurangi stok fisik obat di apotek UKS
-                DB::table('obat')
-                    ->where('id', $validated['id_obat'])
-                    ->decrement('stok_tersedia', $validated['jumlah_dosis']);
-            }
+                if ($obat) {
+                    DB::table('detail_pemberian_obat')->insert([
+                        'id_rekam_medis' => $recordId,
+                        'id_obat'        => $validated['id_obat'],
+                        'jumlah_dosis'   => $validated['jumlah_dosis'],
+                        'aturan_pakai'   => $validated['aturan_pakai'] ?? '1x sehari setelah makan',
+                        'created_at'     => now(),
+                        'updated_at'     => now(),
+                    ]);
 
-            // Jika semua query sukses, simpan permanen
-            DB::commit();
-
-            return redirect()->route('rekam-medis.index')
-                ->with('success', 'Pemeriksaan siswa dan pemberian obat berhasil disimpan! Stok obat telah diperbarui.');
-
-        } catch (\Exception $e) {
-            // Jika terjadi error, hapus file foto & batalkan transaksi DB
+                    DB::table('obat')
+                        ->where('id', $validated['id_obat'])
+                        ->decrement('stok_tersedia', $validated['jumlah_dosis']);
+                }
+            });
+        } catch (\Throwable $exception) {
             if ($fotoPath) {
-                Storage::disk('public')->delete($fotoPath);
+                Storage::disk('local')->delete($fotoPath);
             }
 
-            DB::rollBack();
-            return back()->withInput()->with('error', 'Gagal menyimpan pemeriksaan: ' . $e->getMessage());
+            throw $exception;
         }
+
+        return redirect()->route('rekam-medis.index')
+            ->with('success', 'Pemeriksaan siswa dan pemberian obat berhasil disimpan! Stok obat telah diperbarui.');
     }
 }

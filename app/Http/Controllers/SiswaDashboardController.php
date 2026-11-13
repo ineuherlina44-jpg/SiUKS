@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class SiswaDashboardController extends Controller
@@ -83,7 +83,10 @@ class SiswaDashboardController extends Controller
         abort_unless($user && $user->role === 'siswa', 403);
 
         $created = DB::transaction(function () use ($user): bool {
-            $student = DB::table('siswa')->where('id_user', $user->id)->lockForUpdate()->first();
+            $student = DB::table('siswa')
+                ->where('id_user', $user->id)
+                ->lockForUpdate()
+                ->first();
             abort_unless($student, 404);
 
             $hasOpenAlert = DB::table('sinyal_darurat')
@@ -95,13 +98,14 @@ class SiswaDashboardController extends Controller
                 return false;
             }
 
+            $now = now();
             DB::table('sinyal_darurat')->insert([
                 'id_siswa' => $student->id,
                 'id_pelapor' => $user->id,
-                'waktu_pemicu' => now(),
+                'waktu_pemicu' => $now,
                 'status_respon' => 'menunggu',
-                'created_at' => now(),
-                'updated_at' => now(),
+                'created_at' => $now,
+                'updated_at' => $now,
             ]);
 
             return true;
@@ -163,9 +167,9 @@ class SiswaDashboardController extends Controller
             ->first(['status_respon', 'waktu_pemicu']);
 
         $medicineStocks = DB::table('obat')
-            ->select('nama_obat', 'stok_tersedia', 'satuan')
+            ->select('nama_obat', 'stok_tersedia', 'satuan', 'jenis', 'kategori')
+            ->orderBy('stok_tersedia')
             ->orderBy('nama_obat')
-            ->limit(5)
             ->get();
 
         return view('dashboard-siswa', compact(

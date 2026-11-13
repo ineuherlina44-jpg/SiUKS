@@ -26,6 +26,42 @@ class AuthFormTest extends TestCase
             ->assertSee('placeholder="nama@contoh.com"', false);
     }
 
+    public function test_user_can_log_in_with_the_selected_role_and_identifier(): void
+    {
+        $user = User::create([
+            'name' => 'Admin',
+            'email' => 'admin@example.test',
+            'role' => 'admin',
+            'password' => 'correct-password',
+        ]);
+
+        $this->post(route('login.store'), [
+            'role' => 'admin',
+            'identifier' => 'admin@example.test',
+            'password' => 'correct-password',
+        ])
+            ->assertRedirect(route('dashboard'));
+
+        $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_login_attempts_are_rate_limited_per_identifier_and_ip(): void
+    {
+        for ($attempt = 0; $attempt < 5; $attempt++) {
+            $this->post(route('login.store'), [
+                'role' => 'siswa',
+                'identifier' => 'unknown-nisn',
+                'password' => 'incorrect',
+            ])->assertRedirect();
+        }
+
+        $this->post(route('login.store'), [
+            'role' => 'siswa',
+            'identifier' => 'unknown-nisn',
+            'password' => 'incorrect',
+        ])->assertStatus(429);
+    }
+
     public function test_student_registration_disables_fields_for_other_roles(): void
     {
         $response = $this->get(route('register.role', 'siswa'))->assertOk();

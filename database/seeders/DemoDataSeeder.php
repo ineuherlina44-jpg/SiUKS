@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
+use RuntimeException;
 
 class DemoDataSeeder extends Seeder
 {
@@ -14,6 +14,10 @@ class DemoDataSeeder extends Seeder
      */
     public function run(): void
     {
+        if (! app()->environment('local', 'testing')) {
+            throw new RuntimeException('Demo accounts may only be seeded in local or testing environments.');
+        }
+
         // 1. Admin Demo
         User::updateOrCreate(
             ['email' => 'admin@siuks.com'],
@@ -120,16 +124,18 @@ class DemoDataSeeder extends Seeder
         $pmrId = DB::table('petugas_pmr')->where('id_user', $pmrUser->id)->value('id');
         $hasMedicalRecord = DB::table('rekam_medis')->where('id_siswa', $siswaId)->exists();
         if (! $hasMedicalRecord && $pmrId) {
+            $now = now();
+
             $recordId = DB::table('rekam_medis')->insertGetId([
                 'id_siswa' => $siswaId,
                 'id_petugas' => $pmrId,
-                'waktu_pemeriksaan' => now()->subDay(),
+                'waktu_pemeriksaan' => $now,
                 'keluhan' => 'Pusing dan sakit kepala ringan',
                 'tindakan' => 'Istirahat di ruang UKS selama 30 menit dan minum air hangat',
                 'status' => 'diizinkan_pulang',
                 'status_penyakit' => 'Pusing',
-                'created_at' => now()->subDay(),
-                'updated_at' => now()->subDay(),
+                'created_at' => $now,
+                'updated_at' => $now,
             ]);
 
             $paracetamolId = DB::table('obat')->where('kode_obat', 'OBT-001')->value('id');
@@ -139,8 +145,8 @@ class DemoDataSeeder extends Seeder
                     'id_obat' => $paracetamolId,
                     'jumlah_dosis' => 1,
                     'aturan_pakai' => '1 tablet setelah makan',
-                    'created_at' => now()->subDay(),
-                    'updated_at' => now()->subDay(),
+                    'created_at' => $now,
+                    'updated_at' => $now,
                 ]);
             }
         }

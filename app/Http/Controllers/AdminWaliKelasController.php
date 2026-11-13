@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Services\StudentImportService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -49,15 +50,24 @@ class AdminWaliKelasController extends Controller
             $teachers->where('wali_kelas.kelas_dampu', $filters['kelas']);
         }
 
+        $classes = collect(
+            array_merge(
+                DB::table('siswa')->select('kelas')->union(DB::table('wali_kelas')->select('kelas_dampu as kelas'))->orderBy('kelas')->pluck('kelas')->all(),
+                StudentImportService::getPresetClasses()
+            )
+        )
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values()
+            ->all();
+
         return view('admin-data-wali-kelas', [
             'user' => $user,
             'filters' => $filters,
             'teachers' => $teachers->orderBy('users.name')->paginate(15)->withQueryString(),
             'jurusans' => DB::table('wali_kelas')->whereNotNull('jurusan')->where('jurusan', '<>', '')->distinct()->orderBy('jurusan')->pluck('jurusan'),
-            'classes' => DB::table('siswa')->select('kelas')
-                ->union(DB::table('wali_kelas')->select('kelas_dampu as kelas'))
-                ->orderBy('kelas')
-                ->pluck('kelas'),
+            'classes' => $classes,
             'totalTeachers' => DB::table('wali_kelas')->count(),
             'activeTeachers' => DB::table('wali_kelas')->where('status', 'Aktif')->count(),
             'assignedClasses' => DB::table('wali_kelas')->distinct()->count('kelas_dampu'),

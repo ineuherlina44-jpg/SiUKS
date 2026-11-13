@@ -45,6 +45,7 @@
                 @if ($errors->any())
                     <div class="wali-notice wali-notice-error" role="alert">Periksa kembali data yang dimasukkan pada formulir.</div>
                 @endif
+                @include('partials.student-import-credentials')
 
                 <section class="wali-overview wali-overview-four" aria-label="Ringkasan monitoring siswa">
                     <article class="wali-overview-card"><span class="wali-overview-icon icon-blue" aria-hidden="true">♙</span><div><span>Total siswa kelas</span><strong>{{ $totalStudents }}</strong><small>{{ $class }}</small></div></article>
@@ -56,7 +57,10 @@
                 <section class="wali-panel wali-monitoring-panel">
                     <div class="wali-panel-heading wali-monitoring-heading"><div><h2>{{ $management ? 'Daftar siswa' : 'Daftar siswa' }}</h2><p>{{ $management ? 'Data dibatasi ke kelas dampu. Penghapusan siswa dengan riwayat UKS atau SOS tidak diizinkan.' : 'Status sakit dihitung dari kunjungan UKS pada bulan yang dipilih.' }}</p></div>
                         @if ($management)
-                            <button class="wali-add-student" type="button" data-open-student-create>＋ Tambah siswa</button>
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                <button class="wali-add-student" style="background: #2E9B67; color: #fff; border: none; box-shadow: 0 4px 12px rgba(46, 155, 103, 0.25);" type="button" id="btn-open-wali-student-import">📥 Import Siswa Kelas {{ $class }}</button>
+                                <button class="wali-add-student" type="button" data-open-student-create>＋ Tambah manual</button>
+                            </div>
                         @endif
                     </div>
                     <form class="wali-monitoring-filters" method="GET" action="{{ $management ? route('wali-kelas.siswa.index') : route('wali-kelas.monitoring') }}">
@@ -118,6 +122,71 @@
                             <div class="wali-student-form-actions"><button type="button" class="wali-detail-close" data-close-student-dialog>Batal</button><button type="submit" class="wali-filter-submit">Simpan siswa</button></div>
                         </form>
                     </dialog>
+                    <dialog class="wali-student-dialog" id="student-import-dialog" style="max-width: 500px;">
+                        <form method="POST" action="{{ route('wali-kelas.siswa.import') }}" enctype="multipart/form-data" class="wali-student-form">
+                            @csrf
+                            <div class="wali-student-dialog-heading">
+                                <div>
+                                    <p style="color: #2E9B67; font-weight: 700;">Data Kelas {{ $class }}</p>
+                                    <h2>Import Siswa Otomatis</h2>
+                                </div>
+                                <button type="button" class="wali-dialog-close btn-close-wali-import" aria-label="Tutup">×</button>
+                            </div>
+
+                            <div style="background: #EAF3FF; border: 1px solid rgba(23, 50, 77, 0.12); padding: 12px 14px; border-radius: 10px; margin-bottom: 14px;">
+                                <p style="font-size: 11px; color: #17324D; margin: 0; line-height: 1.5;">
+                                    💡 <strong>Kelas Dampu: {{ $class }}</strong><br>
+                                    Mendaftarkan seluruh siswa kelas <strong>{{ $class }}</strong> secara otomatis lengkap dengan NISN, nama lengkap, jenis kelamin, dan akun login siswa.
+                                </p>
+                            </div>
+
+                            <div style="display: flex; gap: 8px; margin-bottom: 14px;">
+                                <label id="lbl_wali_type_class" style="flex: 1; display: flex; align-items: center; gap: 8px; padding: 10px; border: 2px solid #2E9B67; background: #fff; border-radius: 8px; cursor: pointer; font-size: 11px; font-weight: 700; color: #17324D;">
+                                    <input type="radio" name="import_type" value="class" id="wali_import_type_class" @checked(in_array(config('app.env'), ['local', 'testing'], true)) @disabled(! in_array(config('app.env'), ['local', 'testing'], true))>
+                                    <span>{{ in_array(config('app.env'), ['local', 'testing'], true) ? 'Otomatis Kelas ' . $class : 'Roster demo tidak tersedia di environment ini' }}</span>
+                                </label>
+                                <label id="lbl_wali_type_csv" style="flex: 1; display: flex; align-items: center; gap: 8px; padding: 10px; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 8px; cursor: pointer; font-size: 11px; font-weight: 700; color: #64748b;">
+                                    <input type="radio" name="import_type" value="csv" id="wali_import_type_csv" @checked(! in_array(config('app.env'), ['local', 'testing'], true))>
+                                    <span>Unggah File CSV</span>
+                                </label>
+                            </div>
+
+                            <div id="wali_section_class">
+                                <p style="font-size: 11px; color: #475569; margin: 0 0 6px;">
+                                    10 - 12 siswa kelas <strong>{{ $class }}</strong> siap diimpor ke sistem secara instan.
+                                </p>
+                                <p style="font-size: 11px; color: #64748b; margin: 0;">
+                                    @if (! in_array(config('app.env'), ['local', 'testing'], true))
+                                        Roster contoh dinonaktifkan. Gunakan CSV data siswa sekolah.
+                                    @else
+                                        Password tiap akun baru acak dan ditampilkan satu kali setelah impor.
+                                    @endif
+                                </p>
+                            </div>
+
+                            <div id="wali_section_csv" style="display: none;">
+                                <label class="wali-monitoring-field">
+                                    <span>Pilih Berkas CSV Siswa</span>
+                                    <input type="file" name="csv_file" accept=".csv,text/csv">
+                                </label>
+                                <p style="font-size: 11px; color: #64748b;">Password acak tiap akun baru ditampilkan satu kali setelah impor; siswa wajib menggantinya saat login pertama.</p>
+                                <div style="margin-top: 6px; display: flex; justify-content: space-between;">
+                                    <span style="font-size: 10px; color: #64748b;">Kolom: nisn, nama, jenis_kelamin, riwayat_alergi</span>
+                                    <a href="{{ route('wali-kelas.siswa.template') }}" style="font-size: 11px; font-weight: 700; color: #2E9B67; text-decoration: underline;" download>
+                                        Unduh Template CSV
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="wali-student-form-actions" style="margin-top: 18px;">
+                                <button type="button" class="wali-detail-close btn-close-wali-import">Batal</button>
+                                <button type="submit" class="wali-filter-submit" style="background: #2E9B67; color: white;">
+                                    ⚡ Import Semua Siswa Kelas {{ $class }}
+                                </button>
+                            </div>
+                        </form>
+                    </dialog>
+
                     <dialog class="wali-student-dialog" id="student-edit-dialog" data-student-dialog data-kind="edit">
                         <form method="POST" class="wali-student-form" data-student-form data-old-name="{{ old('name') }}" data-old-nisn="{{ old('nisn') }}" data-old-gender="{{ old('jenis_kelamin') }}" data-old-allergies="{{ old('riwayat_alergi') }}">
                             @csrf
@@ -135,5 +204,53 @@
             </div>
         </main>
     </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const importDialog = document.getElementById('student-import-dialog');
+        const openBtn = document.getElementById('btn-open-wali-student-import');
+        const closeBtns = document.querySelectorAll('.btn-close-wali-import');
+
+        if (openBtn && importDialog) {
+            openBtn.addEventListener('click', function () {
+                importDialog.showModal();
+            });
+        }
+
+        closeBtns.forEach(btn => {
+            btn.addEventListener('click', function () {
+                if (importDialog) importDialog.close();
+            });
+        });
+
+        const rClass = document.getElementById('wali_import_type_class');
+        const rCsv = document.getElementById('wali_import_type_csv');
+        const sClass = document.getElementById('wali_section_class');
+        const sCsv = document.getElementById('wali_section_csv');
+        const lblClass = document.getElementById('lbl_wali_type_class');
+        const lblCsv = document.getElementById('lbl_wali_type_csv');
+
+        function toggleWaliType() {
+            if (rClass && rClass.checked) {
+                sClass.style.display = 'block';
+                sCsv.style.display = 'none';
+                lblClass.style.borderColor = '#2E9B67';
+                lblClass.style.background = '#fff';
+                lblCsv.style.borderColor = '#cbd5e1';
+                lblCsv.style.background = '#f8fafc';
+            } else if (rCsv && rCsv.checked) {
+                sClass.style.display = 'none';
+                sCsv.style.display = 'block';
+                lblCsv.style.borderColor = '#2E9B67';
+                lblCsv.style.background = '#fff';
+                lblClass.style.borderColor = '#cbd5e1';
+                lblClass.style.background = '#f8fafc';
+            }
+        }
+
+        if (rClass) rClass.addEventListener('change', toggleWaliType);
+        if (rCsv) rCsv.addEventListener('change', toggleWaliType);
+        toggleWaliType();
+    });
+</script>
 </body>
 </html>

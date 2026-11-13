@@ -22,17 +22,32 @@ document.querySelectorAll('.student-app, .student-stock-app, .student-history-ap
         toggle.setAttribute('aria-expanded', String(!collapsed));
         toggle.setAttribute('aria-label', collapsed ? 'Tampilkan navigasi' : 'Sembunyikan navigasi');
         toggle.title = collapsed ? 'Tampilkan navigasi' : 'Sembunyikan navigasi';
+        if (isStudentApp) {
+            toggle.textContent = collapsed ? '☰' : '×';
+        }
     };
 
+    const mobileSidebar = window.matchMedia('(max-width: 640px)');
     const savedState = localStorage.getItem(storageKey);
-    setCollapsed(savedState === null
-        ? window.matchMedia('(max-width: 640px)').matches
-        : savedState === 'true');
+    setCollapsed(isStudentApp && mobileSidebar.matches
+        ? true
+        : savedState === null ? mobileSidebar.matches : savedState === 'true');
     toggle.addEventListener('click', () => {
         const collapsed = !app.classList.contains('sidebar-collapsed');
         setCollapsed(collapsed);
-        localStorage.setItem(storageKey, String(collapsed));
+        if (!isStudentApp || !mobileSidebar.matches) {
+            localStorage.setItem(storageKey, String(collapsed));
+        }
     });
+
+    if (isStudentApp) {
+        app.querySelector('[data-student-sidebar-backdrop]')?.addEventListener('click', () => {
+            setCollapsed(true);
+        });
+        mobileSidebar.addEventListener('change', (event) => {
+            setCollapsed(event.matches || localStorage.getItem(storageKey) === 'true');
+        });
+    }
 });
 
 document.querySelectorAll('[data-sos-form]').forEach((form) => {
@@ -528,3 +543,35 @@ if (medicineDialog) {
         medicineDialog.showModal();
     }
 }
+
+document.querySelectorAll('form:not([data-sos-form]):not([data-no-submit-feedback])').forEach((form) => {
+    if (form.method.toUpperCase() === 'GET') {
+        return;
+    }
+
+    form.addEventListener('submit', (event) => {
+        if (event.defaultPrevented) {
+            return;
+        }
+
+        if (form.dataset.submitting === 'true') {
+            event.preventDefault();
+            return;
+        }
+
+        const button = event.submitter || form.querySelector('button:not([type]), button[type="submit"], input[type="submit"]');
+        if (!button || button.disabled) {
+            return;
+        }
+
+        form.dataset.submitting = 'true';
+        button.disabled = true;
+        button.setAttribute('aria-busy', 'true');
+
+        if (button instanceof HTMLInputElement) {
+            button.value = 'Memproses...';
+        } else {
+            button.textContent = 'Memproses...';
+        }
+    });
+});

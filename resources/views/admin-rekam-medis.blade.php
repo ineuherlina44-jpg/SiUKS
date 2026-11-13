@@ -42,11 +42,11 @@
             @if ($errors->any())<div class="siuks-student-notice notice-error" role="alert">Periksa kembali rentang tanggal dan filter yang dipilih.</div>@endif
             <section class="siuks-panel siuks-student-panel siuks-medical-panel">
                 <form class="siuks-student-filters siuks-medical-filters" method="GET" action="{{ route('admin.rekam-medis.index') }}">
-                    <label><span>Cari nama, NISN, atau keluhan</span><input type="search" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Nama siswa, NISN, keluhan..."></label>
+                    <label><span>Cari nama, NISN, keluhan, diagnosis, atau tindakan</span><input type="search" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Nama siswa, NISN, diagnosis..."></label>
                     <label><span>Jenis pemeriksaan</span><select name="type"><option value="">Semua jenis</option>@foreach ($types as $type)<option value="{{ $type }}" @selected(($filters['type'] ?? '') === $type)>{{ $type }}</option>@endforeach</select></label>
                     <label><span>Status kunjungan</span><select name="status"><option value="">Semua status</option><option value="dirawat" @selected(($filters['status'] ?? '') === 'dirawat')>Sedang dirawat</option><option value="diizinkan_pulang" @selected(($filters['status'] ?? '') === 'diizinkan_pulang')>Diizinkan pulang</option><option value="rujukan" @selected(($filters['status'] ?? '') === 'rujukan')>Rujukan</option></select></label>
-                    <label><span>Dari tanggal</span><input type="date" name="date_from" value="{{ $filters['date_from'] }}"></label>
-                    <label><span>Sampai tanggal</span><input type="date" name="date_to" value="{{ $filters['date_to'] }}"></label>
+                    <label><span>Dari tanggal</span><input type="date" name="date_from" value="{{ $filters['date_from'] ?? '' }}"></label>
+                    <label><span>Sampai tanggal</span><input type="date" name="date_to" value="{{ $filters['date_to'] ?? '' }}"></label>
                     <button class="siuks-student-filter-submit" type="submit">Terapkan filter</button>
                 </form>
                 <div class="siuks-medical-table-heading">

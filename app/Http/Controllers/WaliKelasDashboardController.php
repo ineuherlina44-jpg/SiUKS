@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Services\StudentImportService;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Carbon;
@@ -182,6 +183,47 @@ class WaliKelasDashboardController extends Controller
     public function students(Request $request): View
     {
         return $this->monitoring($request, true);
+    }
+
+    public function importStudents(Request $request): RedirectResponse
+    {
+        [, $class] = $this->currentTeacher();
+        $validated = $request->validate([
+            'import_type' => ['required', 'in:class,csv'],
+            'csv_file'    => ['required_if:import_type,csv', 'nullable', 'file', 'mimes:csv,txt', 'max:2048'],
+        ], [
+            'csv_file.required_if' => 'Unggah berkas CSV siswa.',
+            'csv_file.mimes' => 'Format berkas harus CSV (.csv).',
+            'csv_file.max' => 'Ukuran berkas CSV maksimal 2MB.',
+        ]);
+
+        try {
+            if ($validated['import_type'] === 'class') {
+                $result = StudentImportService::importRosterForClass($class);
+                return redirect()->route('wali-kelas.siswa.index')
+                    ->with('status', "Berhasil mendaftarkan seluruh siswa kelas {$class} ({$result['imported']} siswa baru terdaftar, {$result['updated']} diperbarui).")
+                    ->with('import_credentials', $result['credentials']);
+            } else {
+                $result = StudentImportService::importFromCsv($request->file('csv_file'), $class);
+                return redirect()->route('wali-kelas.siswa.index')
+                    ->with('status', "Berhasil mengimpor data siswa kelas {$class} dari berkas CSV ({$result['imported']} siswa baru, {$result['updated']} diperbarui).")
+                    ->with('import_credentials', $result['credentials']);
+            }
+        } catch (\Throwable $e) {
+            return redirect()->route('wali-kelas.siswa.index')
+                ->with('error', 'Gagal mengimpor data siswa: ' . $e->getMessage());
+        }
+    }
+
+    public function downloadTemplate(Request $request)
+    {
+        [, $class] = $this->currentTeacher();
+        $csv = StudentImportService::generateSampleCsv($class);
+
+        return response($csv, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="template_siswa_' . Str::slug($class) . '.csv"',
+        ]);
     }
 
     public function storeStudent(Request $request): RedirectResponse

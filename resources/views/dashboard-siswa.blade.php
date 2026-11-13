@@ -23,6 +23,7 @@
             </nav>
             <div class="student-sidebar-bottom"><span class="student-status-dot"></span>SiUKS aktif</div>
         </aside>
+        <button class="student-sidebar-backdrop" type="button" data-student-sidebar-backdrop aria-label="Tutup navigasi"></button>
 
         <main class="student-main" id="ringkasan">
             <header class="student-topbar">
