@@ -41,7 +41,7 @@ Database yang sedang dipakai aplikasi berisi data yang perlu dipertahankan. Sebe
 4. Deploy aplikasi dan pastikan migrasi yang masih pending selesai di log. Setelah itu, cocokkan jumlah record tabel utama dengan database sumber dan uji login sebelum mengalihkan pengguna.
 5. Simpan backup sampai verifikasi selesai. Foto rekam medis baru disimpan di private disk; jika memindahkan berkas lama, pastikan berkasnya ada di volume private dan tidak tersisa di area publik.
 
-Catatan skema: database sumber sudah mencatat migrasi `2026_10_09_132724_create_rooms_table.php` sebagai selesai. Mengubah file migrasi yang telah berjalan tidak mengubah tabel yang sudah ada. Kode aplikasi saat ini tidak memakai `rooms` atau `reservations`; jangan mengandalkan perubahan file tersebut untuk mengubah skema produksi. Jika fitur itu diperlukan nanti, buat migrasi baru setelah skema sumber diperiksa.
+Catatan skema: kode aplikasi saat ini tidak memakai `rooms` atau `reservations`, dan migrasinya tidak disertakan pada branch deploy ini. Jika backup database lama berisi tabel tersebut, data tetap ikut saat backup diimpor. Database baru tidak akan membuat tabel itu; jika fitur reservasi diperlukan nanti, tambahkan migrasi yang benar setelah skema diperiksa.
 
 ### Kredensial siswa
 
@@ -72,7 +72,7 @@ php artisan optimize
 
 Ambil backup database sebelum migrasi produksi. Jangan jalankan `migrate:fresh` pada database yang berisi data.
 
-Periksa `php artisan migrate:status` pada database tujuan sebelum deploy. Repository saat ini mengubah file migrasi `2026_10_09_132724_create_rooms_table.php`, sedangkan migrasi tersebut sudah tercatat pernah dijalankan di database lokal. Perubahan pada migrasi yang sudah tercatat tidak akan berjalan ulang; untuk mengubah schema database yang sudah ada, gunakan migrasi baru dan pastikan schema database tujuan sesuai.
+Periksa `php artisan migrate:status` pada database tujuan sebelum deploy. Jangan menghapus tabel `migrations` atau menjalankan `migrate:fresh` pada database yang berisi data. Untuk perubahan skema setelah deploy, tambahkan migrasi baru dan pastikan skema database tujuan sesuai.
 
 Demo account hanya ditanam oleh seeder pada environment `local` dan `testing`. Untuk membuat administrator pertama di database baru, jalankan perintah interaktif ini melalui terminal server setelah migrasi:
 
