@@ -183,7 +183,7 @@ class AdminStudentController extends Controller
             'nisn.unique' => 'NISN ini sudah terdaftar.',
         ]);
 //kode bukti bahwa NISN dan email yang diperbarui tidak boleh sama dengan siswa lain, sehingga menggunakan Rule::unique.
-
+//dan berikut juga dengan bukti bahwa simulasi duplikat vs valid data berhasil karnanya.
 
         DB::transaction(function () use ($validated, $studentRecord): void {
             DB::table('users')->where('id', $studentRecord->id_user)->update([
