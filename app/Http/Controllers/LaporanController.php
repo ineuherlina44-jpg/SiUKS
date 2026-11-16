@@ -539,3 +539,4 @@ class LaporanController extends Controller
         abort_unless($request->user() && $request->user()->role === 'admin', 403);
     }
 }
+// isi kode yang ada di file ini adalah controller untuk menangani laporan di aplikasi SiUKS. Controller ini memiliki beberapa metode untuk menampilkan halaman laporan, mengunduh laporan dalam format PDF, dan memfilter data rekam medis berdasarkan kriteria tertentu. Metode-metode ini juga memastikan bahwa hanya pengguna dengan peran yang sesuai (petugas PMR atau admin) yang dapat mengakses fitur-fitur tersebut.
