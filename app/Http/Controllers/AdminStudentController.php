@@ -61,7 +61,7 @@ class AdminStudentController extends Controller
             array_merge(
                 DB::table('siswa')->select('kelas')->distinct()->orderBy('kelas')->pluck('kelas')->all(),
                 StudentImportService::getPresetClasses()
-            )
+                )
         )
             ->filter()
             ->unique()
@@ -182,6 +182,8 @@ class AdminStudentController extends Controller
             'email.unique' => 'Email ini sudah digunakan akun lain.',
             'nisn.unique' => 'NISN ini sudah terdaftar.',
         ]);
+//kode bukti bahwa NISN dan email yang diperbarui tidak boleh sama dengan siswa lain, sehingga menggunakan Rule::unique.
+
 
         DB::transaction(function () use ($validated, $studentRecord): void {
             DB::table('users')->where('id', $studentRecord->id_user)->update([
