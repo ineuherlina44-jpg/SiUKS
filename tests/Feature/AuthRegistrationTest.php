@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class AuthRegistrationTest extends TestCase
@@ -18,6 +19,7 @@ class AuthRegistrationTest extends TestCase
             'nisn' => '1234567890',
             'kelas' => 'XI IPA 1',
             'jenis_kelamin' => 'Laki-laki',
+            'nomor_whatsapp_orang_tua' => '081234567890',
             'password' => 'password123',
             'password_confirmation' => 'password123',
         ]);
@@ -31,6 +33,7 @@ class AuthRegistrationTest extends TestCase
             'nisn' => '1234567890',
             'kelas' => 'XI IPA 1',
             'jenis_kelamin' => 'Laki-laki',
+            'nomor_whatsapp_orang_tua' => '081234567890',
         ]);
         $this->assertNotNull(User::where('email', 'budi@example.com')->first());
 
@@ -39,5 +42,40 @@ class AuthRegistrationTest extends TestCase
             ->assertSee('Riwayat Kesehatan Saya')
             ->assertSee('Total kunjungan')
             ->assertSee('Belum ada riwayat kunjungan UKS.');
+    }
+
+    public function test_student_registration_warns_when_email_or_nisn_is_already_registered(): void
+    {
+        $existing = User::create([
+            'name' => 'Siswa Lama',
+            'email' => 'siswa.lama@example.test',
+            'role' => 'siswa',
+            'password' => 'password123',
+        ]);
+        DB::table('siswa')->insert([
+            'id_user' => $existing->id,
+            'nisn' => '1234567891',
+            'kelas' => 'XI IPA 1',
+            'jenis_kelamin' => 'Laki-laki',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->post('/register/siswa', [
+            'name' => 'Siswa Baru',
+            'email' => 'siswa.lama@example.test',
+            'nisn' => '1234567891',
+            'kelas' => 'XI IPA 1',
+            'jenis_kelamin' => 'Laki-laki',
+            'nomor_whatsapp_orang_tua' => '081234567890',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+        ])
+            ->assertSessionHasErrors([
+                'email' => 'Email ini sudah terdaftar.',
+                'nisn' => 'NISN ini sudah terdaftar.',
+            ]);
+
+        $this->assertSame(1, User::where('email', 'siswa.lama@example.test')->count());
     }
 }

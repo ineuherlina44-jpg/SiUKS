@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\WhatsappNumber;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -165,6 +166,15 @@ class SiswaDashboardController extends Controller
             ->where('status_respon', '<>', 'selesai')
             ->orderByDesc('waktu_pemicu')
             ->first(['status_respon', 'waktu_pemicu']);
+        $whatsappMessage = sprintf(
+            'Notifikasi SiUKS: %s dari kelas %s mengirim sinyal SOS dan membutuhkan bantuan UKS pada %s. Mohon hubungi pihak sekolah.',
+            $user->name,
+            $student->kelas,
+            $openAlert ? \Illuminate\Support\Carbon::parse($openAlert->waktu_pemicu)->format('d-m-Y H:i') : now()->format('d-m-Y H:i'),
+        );
+        $whatsappUrl = $openAlert
+            ? WhatsappNumber::chatUrl($student->nomor_whatsapp_orang_tua, $whatsappMessage)
+            : null;
 
         $medicineStocks = DB::table('obat')
             ->select('nama_obat', 'stok_tersedia', 'satuan', 'jenis', 'kategori')
@@ -182,6 +192,7 @@ class SiswaDashboardController extends Controller
             'recordMedicines',
             'recentAlerts',
             'openAlert',
+            'whatsappUrl',
             'medicineStocks',
         ));
     }

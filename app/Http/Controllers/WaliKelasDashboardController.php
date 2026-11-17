@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Services\StudentImportService;
+use App\Services\WhatsappNumber;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Carbon;
@@ -88,7 +89,7 @@ class WaliKelasDashboardController extends Controller
         $students = DB::table('siswa')
             ->join('users', 'users.id', '=', 'siswa.id_user')
             ->where('siswa.kelas', $class)
-            ->select('siswa.id', 'siswa.nisn', 'siswa.kelas', 'siswa.jenis_kelamin', 'siswa.riwayat_alergi', 'users.name as nama_siswa')
+            ->select('siswa.id', 'siswa.nisn', 'siswa.kelas', 'siswa.jenis_kelamin', 'siswa.nomor_whatsapp_orang_tua', 'siswa.riwayat_alergi', 'users.name as nama_siswa')
             ->selectSub(
                 DB::table('rekam_medis as latest_visit')
                     ->select('latest_visit.waktu_pemeriksaan')
@@ -235,6 +236,7 @@ class WaliKelasDashboardController extends Controller
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'nisn' => ['required', 'string', 'max:20', 'unique:siswa,nisn'],
             'jenis_kelamin' => ['required', 'in:Laki-laki,Perempuan'],
+            'nomor_whatsapp_orang_tua' => ['required', 'string', 'max:25', WhatsappNumber::validationRule()],
             'riwayat_alergi' => ['nullable', 'string', 'max:2000'],
         ], [
             'name.required' => 'Nama siswa wajib diisi.',
@@ -246,6 +248,7 @@ class WaliKelasDashboardController extends Controller
             'password.confirmed' => 'Konfirmasi password tidak cocok.',
             'nisn.required' => 'NISN wajib diisi.',
             'nisn.unique' => 'NISN ini sudah terdaftar.',
+            'nomor_whatsapp_orang_tua.required' => 'Nomor WhatsApp orang tua/wali wajib diisi.',
             'jenis_kelamin.required' => 'Jenis kelamin wajib dipilih.',
             'jenis_kelamin.in' => 'Jenis kelamin yang dipilih tidak valid.',
             'riwayat_alergi.max' => 'Riwayat alergi maksimal 2000 karakter.',
@@ -264,6 +267,7 @@ class WaliKelasDashboardController extends Controller
                 'nisn' => $validated['nisn'],
                 'kelas' => $class,
                 'jenis_kelamin' => $validated['jenis_kelamin'],
+                'nomor_whatsapp_orang_tua' => $validated['nomor_whatsapp_orang_tua'],
                 'riwayat_alergi' => $validated['riwayat_alergi'] ?? null,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -283,11 +287,13 @@ class WaliKelasDashboardController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'nisn' => ['required', 'string', 'max:20', Rule::unique('siswa', 'nisn')->ignore($studentRecord->id)],
             'jenis_kelamin' => ['required', 'in:Laki-laki,Perempuan'],
+            'nomor_whatsapp_orang_tua' => ['required', 'string', 'max:25', WhatsappNumber::validationRule()],
             'riwayat_alergi' => ['nullable', 'string', 'max:2000'],
         ], [
             'name.required' => 'Nama siswa wajib diisi.',
             'nisn.required' => 'NISN wajib diisi.',
             'nisn.unique' => 'NISN ini sudah terdaftar.',
+            'nomor_whatsapp_orang_tua.required' => 'Nomor WhatsApp orang tua/wali wajib diisi.',
             'jenis_kelamin.required' => 'Jenis kelamin wajib dipilih.',
             'jenis_kelamin.in' => 'Jenis kelamin yang dipilih tidak valid.',
             'riwayat_alergi.max' => 'Riwayat alergi maksimal 2000 karakter.',
@@ -301,6 +307,7 @@ class WaliKelasDashboardController extends Controller
             DB::table('siswa')->where('id', $studentRecord->id)->update([
                 'nisn' => $validated['nisn'],
                 'jenis_kelamin' => $validated['jenis_kelamin'],
+                'nomor_whatsapp_orang_tua' => $validated['nomor_whatsapp_orang_tua'],
                 'riwayat_alergi' => $validated['riwayat_alergi'] ?? null,
                 'updated_at' => now(),
             ]);

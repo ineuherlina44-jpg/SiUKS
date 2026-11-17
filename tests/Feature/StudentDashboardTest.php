@@ -27,6 +27,13 @@ class StudentDashboardTest extends TestCase
         ]);
 
         $this->actingAs($student)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('https://wa.me/6281234567890?text=', false)
+            ->assertSee('Hubungi orang tua via WhatsApp')
+            ->assertSee('Pesan tidak dikirim otomatis.');
+
+        $this->actingAs($student)
             ->post(route('siswa.sos.store'))
             ->assertRedirect(route('dashboard'))
             ->assertSessionHas('status', 'Sinyal SOS Anda masih menunggu penanganan. Petugas UKS sudah menerima laporan tersebut.');
@@ -47,6 +54,27 @@ class StudentDashboardTest extends TestCase
         $this->actingAs($admin)
             ->post(route('siswa.sos.store'))
             ->assertForbidden();
+    }
+
+    public function test_sos_remains_available_when_parent_whatsapp_number_is_missing(): void
+    {
+        [$student, $studentId] = $this->createStudent();
+        DB::table('siswa')->where('id', $studentId)->update(['nomor_whatsapp_orang_tua' => null]);
+
+        $this->actingAs($student)
+            ->post(route('siswa.sos.store'))
+            ->assertRedirect(route('dashboard'));
+
+        $this->actingAs($student)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('Nomor WhatsApp orang tua/wali belum tercatat.')
+            ->assertDontSee('Hubungi orang tua via WhatsApp');
+
+        $this->assertDatabaseHas('sinyal_darurat', [
+            'id_siswa' => $studentId,
+            'status_respon' => 'menunggu',
+        ]);
     }
 
     public function test_student_navigation_is_available_across_all_student_pages(): void
@@ -75,6 +103,7 @@ class StudentDashboardTest extends TestCase
             'nisn' => '3000000001',
             'kelas' => 'RPL 4',
             'jenis_kelamin' => 'Perempuan',
+            'nomor_whatsapp_orang_tua' => '0812-3456-7890',
             'created_at' => now(),
             'updated_at' => now(),
         ]);

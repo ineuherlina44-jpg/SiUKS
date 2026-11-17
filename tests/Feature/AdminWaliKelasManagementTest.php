@@ -85,6 +85,25 @@ class AdminWaliKelasManagementTest extends TestCase
         ])->assertSessionHasErrors(['identifier' => 'Akun wali kelas ini sedang nonaktif.']);
     }
 
+    public function test_admin_gets_a_clear_warning_when_homeroom_teacher_email_is_already_registered(): void
+    {
+        $admin = $this->createAdmin();
+        $this->createUser('Siswa', 'existing@example.test', 'siswa');
+
+        $this->actingAs($admin)
+            ->post(route('admin.wali-kelas.store'), [
+                'name' => 'Guru Baru',
+                'email' => 'existing@example.test',
+                'password' => 'GuruBaru123',
+                'password_confirmation' => 'GuruBaru123',
+                'nip' => '10010',
+                'jurusan' => 'IPA',
+                'kelas_dampu' => 'X IPA 1',
+                'status' => 'Aktif',
+            ])
+            ->assertSessionHasErrors(['email' => 'Email ini sudah terdaftar.']);
+    }
+
     public function test_admin_cannot_delete_homeroom_teacher_that_reported_sos(): void
     {
         $admin = $this->createAdmin();
@@ -138,6 +157,16 @@ class AdminWaliKelasManagementTest extends TestCase
             'name' => 'Admin Sekolah',
             'email' => 'admin@example.test',
             'role' => 'admin',
+            'password' => 'password123',
+        ]);
+    }
+
+    private function createUser(string $name, string $email, string $role): User
+    {
+        return User::create([
+            'name' => $name,
+            'email' => $email,
+            'role' => $role,
             'password' => 'password123',
         ]);
     }

@@ -123,6 +123,7 @@ document.querySelectorAll('.wali-app').forEach((app) => {
         form.querySelector('[name="name"]').value = useOldInput ? form.dataset.oldName : button.dataset.name;
         form.querySelector('[name="nisn"]').value = useOldInput ? form.dataset.oldNisn : button.dataset.nisn;
         form.querySelector('[name="jenis_kelamin"]').value = useOldInput ? form.dataset.oldGender : button.dataset.gender;
+        form.querySelector('[name="nomor_whatsapp_orang_tua"]').value = useOldInput ? form.dataset.oldParentWhatsapp : button.dataset.parentWhatsapp;
         form.querySelector('[name="riwayat_alergi"]').value = useOldInput ? form.dataset.oldAllergies : button.dataset.allergies;
         setDialogQuery('edit', button.dataset.id);
         editDialog.showModal();
@@ -194,6 +195,7 @@ document.querySelectorAll('.siuks-student-page').forEach((app) => {
         form.querySelector('[name="nisn"]').value = useOldInput ? form.dataset.oldNisn : button.dataset.nisn;
         form.querySelector('[name="kelas"]').value = useOldInput ? form.dataset.oldClass : button.dataset.class;
         form.querySelector('[name="jenis_kelamin"]').value = useOldInput ? form.dataset.oldGender : button.dataset.gender;
+        form.querySelector('[name="nomor_whatsapp_orang_tua"]').value = useOldInput ? form.dataset.oldParentWhatsapp : button.dataset.parentWhatsapp;
         form.querySelector('[name="riwayat_alergi"]').value = useOldInput ? form.dataset.oldAllergies : button.dataset.allergies;
         setDialogQuery('edit', button.dataset.id);
         editDialog.showModal();

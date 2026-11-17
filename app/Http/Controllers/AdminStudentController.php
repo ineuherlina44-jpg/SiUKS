@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Services\StudentImportService;
+use App\Services\WhatsappNumber;
 use Illuminate\Support\Str;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -30,7 +31,7 @@ class AdminStudentController extends Controller
 
         $students = DB::table('siswa')
             ->join('users', 'users.id', '=', 'siswa.id_user')
-            ->select('siswa.id', 'siswa.id_user', 'siswa.nisn', 'siswa.kelas', 'siswa.jenis_kelamin', 'siswa.riwayat_alergi', 'users.name as nama_siswa', 'users.email')
+            ->select('siswa.id', 'siswa.id_user', 'siswa.nisn', 'siswa.kelas', 'siswa.jenis_kelamin', 'siswa.nomor_whatsapp_orang_tua', 'siswa.riwayat_alergi', 'users.name as nama_siswa', 'users.email')
             ->selectSub($monthlyVisits()->selectRaw('1')->limit(1), 'berkunjung_bulan_ini');
 
         if (! empty($filters['search'])) {
@@ -135,12 +136,14 @@ class AdminStudentController extends Controller
             'nisn' => ['required', 'string', 'max:20', 'unique:siswa,nisn'],
             'kelas' => ['required', 'string', 'max:100'],
             'jenis_kelamin' => ['required', 'in:Laki-laki,Perempuan'],
+            'nomor_whatsapp_orang_tua' => ['required', 'string', 'max:25', WhatsappNumber::validationRule()],
             'riwayat_alergi' => ['nullable', 'string', 'max:2000'],
         ], [
             'email.unique' => 'Email ini sudah terdaftar.',
             'password.min' => 'Password minimal 8 karakter.',
             'password.confirmed' => 'Konfirmasi password tidak cocok.',
             'nisn.unique' => 'NISN ini sudah terdaftar.',
+            'nomor_whatsapp_orang_tua.required' => 'Nomor WhatsApp orang tua/wali wajib diisi.',
         ]);
 
         DB::transaction(function () use ($validated): void {
@@ -156,6 +159,7 @@ class AdminStudentController extends Controller
                 'nisn' => $validated['nisn'],
                 'kelas' => $validated['kelas'],
                 'jenis_kelamin' => $validated['jenis_kelamin'],
+                'nomor_whatsapp_orang_tua' => $validated['nomor_whatsapp_orang_tua'],
                 'riwayat_alergi' => $validated['riwayat_alergi'] ?? null,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -177,10 +181,12 @@ class AdminStudentController extends Controller
             'nisn' => ['required', 'string', 'max:20', Rule::unique('siswa', 'nisn')->ignore($studentRecord->id)],
             'kelas' => ['required', 'string', 'max:100'],
             'jenis_kelamin' => ['required', 'in:Laki-laki,Perempuan'],
+            'nomor_whatsapp_orang_tua' => ['required', 'string', 'max:25', WhatsappNumber::validationRule()],
             'riwayat_alergi' => ['nullable', 'string', 'max:2000'],
         ], [
             'email.unique' => 'Email ini sudah digunakan akun lain.',
             'nisn.unique' => 'NISN ini sudah terdaftar.',
+            'nomor_whatsapp_orang_tua.required' => 'Nomor WhatsApp orang tua/wali wajib diisi.',
         ]);
 //kode bukti bahwa NISN dan email yang diperbarui tidak boleh sama dengan siswa lain, sehingga menggunakan Rule::unique.
 //dan berikut juga dengan bukti bahwa simulasi duplikat vs valid data berhasil karnanya.
@@ -195,6 +201,7 @@ class AdminStudentController extends Controller
                 'nisn' => $validated['nisn'],
                 'kelas' => $validated['kelas'],
                 'jenis_kelamin' => $validated['jenis_kelamin'],
+                'nomor_whatsapp_orang_tua' => $validated['nomor_whatsapp_orang_tua'],
                 'riwayat_alergi' => $validated['riwayat_alergi'] ?? null,
                 'updated_at' => now(),
             ]);

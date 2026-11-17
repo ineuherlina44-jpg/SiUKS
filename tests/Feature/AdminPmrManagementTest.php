@@ -94,6 +94,25 @@ class AdminPmrManagementTest extends TestCase
         ]);
     }
 
+    public function test_admin_gets_a_clear_warning_when_pmr_email_is_already_registered(): void
+    {
+        $admin = $this->createUser('Admin', 'admin@example.test', 'admin');
+        $this->createUser('Siswa', 'existing@example.test', 'siswa');
+
+        $this->actingAs($admin)
+            ->post(route('admin.pmr.store'), [
+                'name' => 'Petugas Baru',
+                'email' => 'existing@example.test',
+                'password' => 'PetugasBaru123',
+                'password_confirmation' => 'PetugasBaru123',
+                'nis' => 'PMR100',
+                'kelas' => 'XI IPA 2',
+                'jenis_kelamin' => 'Perempuan',
+                'status' => 'Aktif',
+            ])
+            ->assertSessionHasErrors(['email' => 'Email ini sudah terdaftar.']);
+    }
+
     public function test_nonactive_pmr_cannot_login_and_staff_with_history_cannot_be_deleted(): void
     {
         $admin = $this->createUser('Admin', 'admin@example.test', 'admin');

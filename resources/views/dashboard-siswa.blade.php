@@ -58,7 +58,14 @@
                 @endif
 
                 <section class="student-emergency" aria-labelledby="emergency-title">
-                    <div><span class="student-emergency-label">Bantuan cepat</span><h2 id="emergency-title">Butuh bantuan UKS?</h2><p>Sinyal SOS akan tercatat pada pemantauan Petugas PMR. Jika dalam bahaya, segera minta bantuan langsung.</p></div>
+                    <div><span class="student-emergency-label">Bantuan cepat</span><h2 id="emergency-title">Butuh bantuan UKS?</h2><p>Sinyal SOS tercatat untuk Petugas PMR. Untuk memberi tahu orang tua, buka WhatsApp dan kirim pesan yang disiapkan. Jika dalam bahaya, segera minta bantuan langsung.</p>
+                        @if ($openAlert && $whatsappUrl)
+                            <a class="student-whatsapp-link" href="{{ $whatsappUrl }}" target="_blank" rel="noopener noreferrer"><span aria-hidden="true">↗</span>Hubungi orang tua via WhatsApp</a>
+                            <small class="student-whatsapp-help">Periksa pesan di WhatsApp lalu tekan Kirim. Pesan tidak dikirim otomatis.</small>
+                        @elseif ($openAlert)
+                            <p class="student-whatsapp-missing" role="status">Nomor WhatsApp orang tua/wali belum tercatat. Hubungi orang tua atau Petugas UKS secara langsung.</p>
+                        @endif
+                    </div>
                     @if ($openAlert)
                         <button class="student-sos-button" type="button" disabled title="Sinyal SOS masih ditangani">
                             <span aria-hidden="true">!</span>

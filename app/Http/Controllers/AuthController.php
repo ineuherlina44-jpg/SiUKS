@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Services\WhatsappNumber;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -113,11 +114,13 @@ class AuthController extends Controller
             $rules['nisn'] = ['required', 'string', 'max:20', 'unique:siswa,nisn'];
             $rules['kelas'] = ['required', 'string', 'max:100'];
             $rules['jenis_kelamin'] = ['required', 'string', 'in:Laki-laki,Perempuan'];
+            $rules['nomor_whatsapp_orang_tua'] = ['required', 'string', 'max:25', WhatsappNumber::validationRule()];
 
             $messages['nisn.required'] = 'NISN wajib diisi.';
             $messages['nisn.unique'] = 'NISN ini sudah terdaftar.';
             $messages['kelas.required'] = 'Kelas wajib diisi.';
             $messages['jenis_kelamin.required'] = 'Jenis kelamin wajib dipilih.';
+            $messages['nomor_whatsapp_orang_tua.required'] = 'Nomor WhatsApp orang tua/wali wajib diisi.';
         }
 
         if ($role === 'wali_kelas') {
@@ -140,6 +143,7 @@ class AuthController extends Controller
                 'nisn' => $validated['nisn'],
                 'kelas' => $validated['kelas'],
                 'jenis_kelamin' => $validated['jenis_kelamin'],
+                'nomor_whatsapp_orang_tua' => $validated['nomor_whatsapp_orang_tua'],
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

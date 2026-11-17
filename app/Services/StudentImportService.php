@@ -368,9 +368,14 @@ class StudentImportService
                 $kelas = $row[$headerMap['kelas'] ?? $headerMap['class'] ?? 2] ?? $fallbackClass;
                 $gender = $row[$headerMap['jenis_kelamin'] ?? $headerMap['gender'] ?? 3] ?? 'Laki-laki';
                 $allergy = $row[$headerMap['riwayat_alergi'] ?? $headerMap['allergy'] ?? 4] ?? 'Tidak ada';
+                $parentWhatsapp = trim($row[$headerMap['nomor_whatsapp_orang_tua'] ?? 5] ?? '');
 
                 if (empty($name) || empty($nisn) || empty($kelas)) {
                     continue;
+                }
+
+                if (! WhatsappNumber::normalize($parentWhatsapp)) {
+                    throw new RuntimeException("Nomor WhatsApp orang tua/wali tidak valid untuk siswa {$name} (NISN {$nisn}).");
                 }
 
                 $email = Str::slug($name, '.') . '.' . substr($nisn, -4) . '@siswa.siuks.com';
@@ -380,6 +385,7 @@ class StudentImportService
                     DB::table('siswa')->where('id', $existingSiswa->id)->update([
                         'kelas' => $kelas,
                         'jenis_kelamin' => $gender,
+                        'nomor_whatsapp_orang_tua' => $parentWhatsapp,
                         'riwayat_alergi' => $allergy,
                         'updated_at' => now(),
                     ]);
@@ -395,6 +401,7 @@ class StudentImportService
                     'nisn' => $nisn,
                     'kelas' => $kelas,
                     'jenis_kelamin' => $gender,
+                    'nomor_whatsapp_orang_tua' => $parentWhatsapp,
                     'riwayat_alergi' => $allergy,
                     'created_at' => now(),
                     'updated_at' => now(),
@@ -459,11 +466,11 @@ class StudentImportService
      */
     public static function generateSampleCsv(string $kelas = 'RPL 1'): string
     {
-        $output = "nisn,nama,kelas,jenis_kelamin,riwayat_alergi\n";
+        $output = "nisn,nama,kelas,jenis_kelamin,riwayat_alergi,nomor_whatsapp_orang_tua\n";
         $students = self::getStudentsForClass($kelas);
 
         foreach ($students as $s) {
-            $output .= "{$s['nisn']},\"{$s['name']}\",{$kelas},{$s['gender']},\"{$s['allergy']}\"\n";
+            $output .= "{$s['nisn']},\"{$s['name']}\",{$kelas},{$s['gender']},\"{$s['allergy']}\",\n";
         }
 
         return $output;

@@ -80,7 +80,7 @@
                                 <td>{{ $student->jenis_kelamin }}</td>
                                 <td><span class="siuks-pill {{ $student->berkunjung_bulan_ini ? 'pill-sick' : 'pill-healthy' }}">{{ $student->berkunjung_bulan_ini ? 'Sakit' : 'Sehat' }}</span></td>
                                 <td><div class="siuks-student-actions">
-                                    <button type="button" class="siuks-student-edit" data-edit-admin-student data-id="{{ $student->id }}" data-url="{{ route('admin.siswa.update', $student->id) }}" data-name="{{ $student->nama_siswa }}" data-email="{{ $student->email }}" data-nisn="{{ $student->nisn }}" data-class="{{ $student->kelas }}" data-gender="{{ $student->jenis_kelamin }}" data-allergies="{{ $student->riwayat_alergi }}">Edit</button>
+                                    <button type="button" class="siuks-student-edit" data-edit-admin-student data-id="{{ $student->id }}" data-url="{{ route('admin.siswa.update', $student->id) }}" data-name="{{ $student->nama_siswa }}" data-email="{{ $student->email }}" data-nisn="{{ $student->nisn }}" data-class="{{ $student->kelas }}" data-gender="{{ $student->jenis_kelamin }}" data-parent-whatsapp="{{ $student->nomor_whatsapp_orang_tua }}" data-allergies="{{ $student->riwayat_alergi }}">Edit</button>
                                     <form method="POST" action="{{ route('admin.siswa.destroy', $student->id) }}" data-delete-admin-student>@csrf @method('DELETE')<button type="submit" class="siuks-student-delete">Hapus</button></form>
                                 </div></td>
                             </tr>
@@ -104,6 +104,7 @@
             @foreach (['name' => 'Nama lengkap', 'email' => 'Email akun', 'nisn' => 'NISN', 'kelas' => 'Kelas'] as $field => $label)
                 <label><span>{{ $label }}</span><input name="{{ $field }}" type="{{ $field === 'email' ? 'email' : 'text' }}" value="{{ old($field) }}" required maxlength="{{ $field === 'nisn' ? 20 : 255 }}">@error($field)<small>{{ $message }}</small>@enderror</label>
             @endforeach
+            <label><span>Nomor WhatsApp orang tua/wali</span><input name="nomor_whatsapp_orang_tua" type="tel" value="{{ old('nomor_whatsapp_orang_tua') }}" placeholder="Contoh: 081234567890" required maxlength="25">@error('nomor_whatsapp_orang_tua')<small>{{ $message }}</small>@enderror</label>
             <label><span>Password awal siswa</span><input name="password" type="password" minlength="8" required autocomplete="new-password">@error('password')<small>{{ $message }}</small>@enderror</label>
             <label><span>Konfirmasi password</span><input name="password_confirmation" type="password" minlength="8" required autocomplete="new-password"></label>
             <label><span>Jenis kelamin</span><select name="jenis_kelamin" required><option value="">Pilih jenis kelamin</option><option value="Laki-laki" @selected(old('jenis_kelamin') === 'Laki-laki')>Laki-laki</option><option value="Perempuan" @selected(old('jenis_kelamin') === 'Perempuan')>Perempuan</option></select>@error('jenis_kelamin')<small>{{ $message }}</small>@enderror</label>
@@ -166,7 +167,7 @@
                 </label>
                 <p style="font-size: 11px; color: #64748b;">Password acak tiap akun baru ditampilkan satu kali setelah impor; siswa wajib menggantinya saat login pertama.</p>
                 <div style="margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-size: 10px; color: #64748b;">Format: nisn, nama, kelas, jenis_kelamin, riwayat_alergi</span>
+                    <span style="font-size: 10px; color: #64748b;">Format: nisn, nama, kelas, jenis_kelamin, riwayat_alergi, nomor_whatsapp_orang_tua</span>
                     <a href="{{ route('admin.siswa.template') }}" style="font-size: 11px; font-weight: 700; color: #2E9B67; text-decoration: underline;" download>
                         Unduh Template CSV
                     </a>
@@ -183,13 +184,14 @@
     </dialog>
 
     <dialog class="siuks-student-dialog" id="admin-student-edit-dialog" data-admin-student-dialog data-kind="edit">
-        <form method="POST" class="siuks-student-form" data-admin-student-form data-old-name="{{ old('name') }}" data-old-email="{{ old('email') }}" data-old-nisn="{{ old('nisn') }}" data-old-class="{{ old('kelas') }}" data-old-gender="{{ old('jenis_kelamin') }}" data-old-allergies="{{ old('riwayat_alergi') }}">
+        <form method="POST" class="siuks-student-form" data-admin-student-form data-old-name="{{ old('name') }}" data-old-email="{{ old('email') }}" data-old-nisn="{{ old('nisn') }}" data-old-class="{{ old('kelas') }}" data-old-gender="{{ old('jenis_kelamin') }}" data-old-parent-whatsapp="{{ old('nomor_whatsapp_orang_tua') }}" data-old-allergies="{{ old('riwayat_alergi') }}">
             @csrf
             @method('PUT')
             <div class="siuks-student-dialog-heading"><div><p>Kelola data siswa</p><h2>Edit data siswa</h2></div><button type="button" data-close-admin-student-dialog aria-label="Tutup">×</button></div>
             @foreach (['name' => 'Nama lengkap', 'email' => 'Email akun', 'nisn' => 'NISN', 'kelas' => 'Kelas'] as $field => $label)
                 <label><span>{{ $label }}</span><input name="{{ $field }}" type="{{ $field === 'email' ? 'email' : 'text' }}" required maxlength="{{ $field === 'nisn' ? 20 : 255 }}">@error($field)<small>{{ $message }}</small>@enderror</label>
             @endforeach
+            <label><span>Nomor WhatsApp orang tua/wali</span><input name="nomor_whatsapp_orang_tua" type="tel" placeholder="Contoh: 081234567890" required maxlength="25">@error('nomor_whatsapp_orang_tua')<small>{{ $message }}</small>@enderror</label>
             <label><span>Jenis kelamin</span><select name="jenis_kelamin" required><option value="">Pilih jenis kelamin</option><option value="Laki-laki">Laki-laki</option><option value="Perempuan">Perempuan</option></select>@error('jenis_kelamin')<small>{{ $message }}</small>@enderror</label>
             <label><span>Riwayat alergi (opsional)</span><textarea name="riwayat_alergi" rows="3" maxlength="2000"></textarea>@error('riwayat_alergi')<small>{{ $message }}</small>@enderror</label>
             <div class="siuks-student-form-actions"><button type="button" data-close-admin-student-dialog>Batal</button><button type="submit">Simpan perubahan</button></div>

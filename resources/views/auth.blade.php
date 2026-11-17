@@ -718,6 +718,11 @@
                                     </select>
                                     @error('jenis_kelamin')<span class="field-error-text">{{ $message }}</span>@enderror
                                 </div>
+                                <div class="field full">
+                                    <label for="nomor_whatsapp_orang_tua">Nomor WhatsApp orang tua/wali</label>
+                                    <input id="nomor_whatsapp_orang_tua" name="nomor_whatsapp_orang_tua" type="tel" value="{{ old('nomor_whatsapp_orang_tua') }}" placeholder="Contoh: 081234567890" autocomplete="tel" aria-invalid="{{ $errors->has('nomor_whatsapp_orang_tua') ? 'true' : 'false' }}" required @disabled($selectedRole !== 'siswa')>
+                                    @error('nomor_whatsapp_orang_tua')<span class="field-error-text">{{ $message }}</span>@enderror
+                                </div>
                             </div>
                         </div>
 

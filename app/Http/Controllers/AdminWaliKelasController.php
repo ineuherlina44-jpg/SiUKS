@@ -77,7 +77,9 @@ class AdminWaliKelasController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $this->currentAdmin();
-        $validated = $request->validate($this->rules());
+        $validated = $request->validate($this->rules(), [
+            'email.unique' => 'Email ini sudah terdaftar.',
+        ]);
 
         DB::transaction(function () use ($validated): void {
             $teacherUser = User::create([
@@ -107,7 +109,9 @@ class AdminWaliKelasController extends Controller
         $teacher = DB::table('wali_kelas')->where('id', $homeroomTeacher)->first();
         abort_unless($teacher, 404);
 
-        $validated = $request->validate($this->rules($teacher->id_user, $teacher->id, false));
+        $validated = $request->validate($this->rules($teacher->id_user, $teacher->id, false), [
+            'email.unique' => 'Email ini sudah terdaftar.',
+        ]);
 
         DB::transaction(function () use ($validated, $teacher): void {
             DB::table('users')->where('id', $teacher->id_user)->update([

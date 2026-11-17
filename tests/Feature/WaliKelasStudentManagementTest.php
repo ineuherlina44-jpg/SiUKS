@@ -30,6 +30,7 @@ class WaliKelasStudentManagementTest extends TestCase
                 'password_confirmation' => 'SiswaBaru123',
                 'nisn' => '2000000001',
                 'jenis_kelamin' => 'Perempuan',
+                'nomor_whatsapp_orang_tua' => '081234567894',
                 'riwayat_alergi' => 'Alergi kacang',
             ])
             ->assertRedirect(route('wali-kelas.siswa.index'))
@@ -43,6 +44,7 @@ class WaliKelasStudentManagementTest extends TestCase
             'nisn' => '2000000001',
             'kelas' => 'XI IPA 1',
             'jenis_kelamin' => 'Perempuan',
+            'nomor_whatsapp_orang_tua' => '081234567894',
             'riwayat_alergi' => 'Alergi kacang',
         ]);
 
@@ -52,6 +54,7 @@ class WaliKelasStudentManagementTest extends TestCase
                 'name' => 'Siswa Diperbarui',
                 'nisn' => '2000000002',
                 'jenis_kelamin' => 'Laki-laki',
+                'nomor_whatsapp_orang_tua' => '081234567895',
                 'riwayat_alergi' => null,
             ])
             ->assertRedirect(route('wali-kelas.siswa.index'))
@@ -63,6 +66,7 @@ class WaliKelasStudentManagementTest extends TestCase
             'nisn' => '2000000002',
             'kelas' => 'XI IPA 1',
             'jenis_kelamin' => 'Laki-laki',
+            'nomor_whatsapp_orang_tua' => '081234567895',
             'riwayat_alergi' => null,
         ]);
     }

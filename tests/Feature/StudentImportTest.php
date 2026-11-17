@@ -127,7 +127,7 @@ class StudentImportTest extends TestCase
 
         $csv = UploadedFile::fake()->createWithContent(
             'students.csv',
-            "nisn,nama,kelas,jenis_kelamin,riwayat_alergi\n1234500001,Siswa Produksi,RPL 9,Perempuan,Tidak ada\n"
+            "nisn,nama,kelas,jenis_kelamin,riwayat_alergi,nomor_whatsapp_orang_tua\n1234500001,Siswa Produksi,RPL 9,Perempuan,Tidak ada,081234567896\n"
         );
 
         $this->post(route('admin.siswa.import'), [
@@ -187,6 +187,6 @@ class StudentImportTest extends TestCase
 
         $response->assertOk();
         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
-        $this->assertStringContainsString('nisn,nama,kelas,jenis_kelamin,riwayat_alergi', $response->getContent());
+        $this->assertStringContainsString('nisn,nama,kelas,jenis_kelamin,riwayat_alergi,nomor_whatsapp_orang_tua', $response->getContent());
     }
 }

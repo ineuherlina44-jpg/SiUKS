@@ -69,6 +69,7 @@ class AdminStudentManagementTest extends TestCase
                 'nisn' => '3000000003',
                 'kelas' => 'X IPA 3',
                 'jenis_kelamin' => 'Perempuan',
+                'nomor_whatsapp_orang_tua' => '081234567891',
                 'riwayat_alergi' => 'Alergi susu',
             ])
             ->assertRedirect(route('admin.siswa.index'))
@@ -81,6 +82,7 @@ class AdminStudentManagementTest extends TestCase
         $this->assertDatabaseHas('siswa', [
             'id' => $studentId,
             'kelas' => 'X IPA 3',
+            'nomor_whatsapp_orang_tua' => '081234567891',
             'riwayat_alergi' => 'Alergi susu',
         ]);
 
@@ -91,6 +93,7 @@ class AdminStudentManagementTest extends TestCase
                 'nisn' => '3000000004',
                 'kelas' => 'XI IPA 1',
                 'jenis_kelamin' => 'Laki-laki',
+                'nomor_whatsapp_orang_tua' => '081234567892',
                 'riwayat_alergi' => null,
             ])
             ->assertRedirect(route('admin.siswa.index'))
@@ -106,8 +109,37 @@ class AdminStudentManagementTest extends TestCase
             'nisn' => '3000000004',
             'kelas' => 'XI IPA 1',
             'jenis_kelamin' => 'Laki-laki',
+            'nomor_whatsapp_orang_tua' => '081234567892',
             'riwayat_alergi' => null,
         ]);
+    }
+
+    public function test_admin_gets_clear_warnings_for_duplicate_student_email_and_nisn(): void
+    {
+        $admin = $this->createAdmin();
+        $this->createStudent('Siswa Terdaftar', '3000000010', 'X IPA 1');
+        User::create([
+            'name' => 'Akun lain',
+            'email' => 'terpakai@example.test',
+            'role' => 'admin',
+            'password' => 'password123',
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.siswa.store'), [
+                'name' => 'Siswa Duplikat',
+                'email' => 'terpakai@example.test',
+                'password' => 'SiswaBaru123',
+                'password_confirmation' => 'SiswaBaru123',
+                'nisn' => '3000000010',
+                'kelas' => 'X IPA 1',
+                'jenis_kelamin' => 'Laki-laki',
+                'nomor_whatsapp_orang_tua' => '081234567893',
+            ])
+            ->assertSessionHasErrors([
+                'email' => 'Email ini sudah terdaftar.',
+                'nisn' => 'NISN ini sudah terdaftar.',
+            ]);
     }
 
     public function test_admin_cannot_delete_students_with_health_history_but_can_delete_students_without_it(): void

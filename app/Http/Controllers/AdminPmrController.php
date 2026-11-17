@@ -76,7 +76,9 @@ class AdminPmrController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $this->currentAdmin();
-        $validated = $request->validate($this->rules());
+        $validated = $request->validate($this->rules(), [
+            'email.unique' => 'Email ini sudah terdaftar.',
+        ]);
 
         DB::transaction(function () use ($validated): void {
             $staffUser = User::create([
@@ -106,7 +108,9 @@ class AdminPmrController extends Controller
         $this->currentAdmin();
         $staffRecord = DB::table('petugas_pmr')->where('id', $staff)->first();
         abort_unless($staffRecord, 404);
-        $validated = $request->validate($this->rules($staffRecord->id_user, $staffRecord->id, false));
+        $validated = $request->validate($this->rules($staffRecord->id_user, $staffRecord->id, false), [
+            'email.unique' => 'Email ini sudah terdaftar.',
+        ]);
 
         DB::transaction(function () use ($validated, $staffRecord): void {
             DB::table('users')->where('id', $staffRecord->id_user)->update([

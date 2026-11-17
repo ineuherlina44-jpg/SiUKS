@@ -93,7 +93,7 @@
                         @forelse ($students as $student)
                             <tr><td><strong>{{ $student->nama_siswa }}</strong></td><td>{{ $student->nisn }}</td><td>{{ $student->kelas }}</td><td>{{ $student->jenis_kelamin }}</td><td><span class="wali-status-pill {{ $student->berkunjung_bulan_ini ? 'status-attention' : 'status-safe' }}">{{ $student->berkunjung_bulan_ini ? 'Sakit' : 'Sehat' }}</span></td>
                                 @if ($management)
-                                    <td class="wali-student-actions"><button class="wali-view-student" type="button" data-edit-student data-id="{{ $student->id }}" data-url="{{ route('wali-kelas.siswa.update', $student->id) }}" data-name="{{ $student->nama_siswa }}" data-nisn="{{ $student->nisn }}" data-gender="{{ $student->jenis_kelamin }}" data-allergies="{{ $student->riwayat_alergi }}">Edit</button><form method="POST" action="{{ route('wali-kelas.siswa.destroy', $student->id) }}" data-delete-student>@csrf @method('DELETE')<button class="wali-delete-student" type="submit">Hapus</button></form></td>
+                                    <td class="wali-student-actions"><button class="wali-view-student" type="button" data-edit-student data-id="{{ $student->id }}" data-url="{{ route('wali-kelas.siswa.update', $student->id) }}" data-name="{{ $student->nama_siswa }}" data-nisn="{{ $student->nisn }}" data-gender="{{ $student->jenis_kelamin }}" data-parent-whatsapp="{{ $student->nomor_whatsapp_orang_tua }}" data-allergies="{{ $student->riwayat_alergi }}">Edit</button><form method="POST" action="{{ route('wali-kelas.siswa.destroy', $student->id) }}" data-delete-student>@csrf @method('DELETE')<button class="wali-delete-student" type="submit">Hapus</button></form></td>
                                 @else
                                     <td>{{ $student->kunjungan_terakhir ? \Illuminate\Support\Carbon::parse($student->kunjungan_terakhir)->locale('id')->translatedFormat('d M Y') : 'Belum pernah' }}</td><td><a class="wali-view-student" href="{{ route('wali-kelas.monitoring', array_merge(request()->query(), ['student' => $student->id])) }}">Lihat</a></td>
                                 @endif
@@ -114,6 +114,7 @@
                             @foreach (['name' => 'Nama lengkap', 'email' => 'Email akun', 'nisn' => 'NISN'] as $field => $label)
                                 <label class="wali-monitoring-field"><span>{{ $label }}</span><input name="{{ $field }}" type="{{ $field === 'email' ? 'email' : 'text' }}" value="{{ old($field) }}" required maxlength="{{ $field === 'nisn' ? 20 : 255 }}" @if ($field === 'email') autocomplete="email" @endif>@error($field)<small class="wali-field-error">{{ $message }}</small>@enderror</label>
                             @endforeach
+                            <label class="wali-monitoring-field"><span>Nomor WhatsApp orang tua/wali</span><input name="nomor_whatsapp_orang_tua" type="tel" value="{{ old('nomor_whatsapp_orang_tua') }}" placeholder="Contoh: 081234567890" required maxlength="25">@error('nomor_whatsapp_orang_tua')<small class="wali-field-error">{{ $message }}</small>@enderror</label>
                             <label class="wali-monitoring-field"><span>Password awal siswa</span><input name="password" type="password" minlength="8" required autocomplete="new-password">@error('password')<small class="wali-field-error">{{ $message }}</small>@enderror</label>
                             <label class="wali-monitoring-field"><span>Konfirmasi password</span><input name="password_confirmation" type="password" minlength="8" required autocomplete="new-password"></label>
                             <label class="wali-monitoring-field"><span>Jenis kelamin</span><select name="jenis_kelamin" required><option value="">Pilih jenis kelamin</option><option value="Laki-laki" @selected(old('jenis_kelamin') === 'Laki-laki')>Laki-laki</option><option value="Perempuan" @selected(old('jenis_kelamin') === 'Perempuan')>Perempuan</option></select>@error('jenis_kelamin')<small class="wali-field-error">{{ $message }}</small>@enderror</label>
@@ -171,7 +172,7 @@
                                 </label>
                                 <p style="font-size: 11px; color: #64748b;">Password acak tiap akun baru ditampilkan satu kali setelah impor; siswa wajib menggantinya saat login pertama.</p>
                                 <div style="margin-top: 6px; display: flex; justify-content: space-between;">
-                                    <span style="font-size: 10px; color: #64748b;">Kolom: nisn, nama, jenis_kelamin, riwayat_alergi</span>
+                                    <span style="font-size: 10px; color: #64748b;">Kolom: nisn, nama, jenis_kelamin, riwayat_alergi, nomor_whatsapp_orang_tua</span>
                                     <a href="{{ route('wali-kelas.siswa.template') }}" style="font-size: 11px; font-weight: 700; color: #2E9B67; text-decoration: underline;" download>
                                         Unduh Template CSV
                                     </a>
@@ -188,13 +189,14 @@
                     </dialog>
 
                     <dialog class="wali-student-dialog" id="student-edit-dialog" data-student-dialog data-kind="edit">
-                        <form method="POST" class="wali-student-form" data-student-form data-old-name="{{ old('name') }}" data-old-nisn="{{ old('nisn') }}" data-old-gender="{{ old('jenis_kelamin') }}" data-old-allergies="{{ old('riwayat_alergi') }}">
+                        <form method="POST" class="wali-student-form" data-student-form data-old-name="{{ old('name') }}" data-old-nisn="{{ old('nisn') }}" data-old-gender="{{ old('jenis_kelamin') }}" data-old-parent-whatsapp="{{ old('nomor_whatsapp_orang_tua') }}" data-old-allergies="{{ old('riwayat_alergi') }}">
                             @csrf
                             @method('PUT')
                             <div class="wali-student-dialog-heading"><div><p>Data kelas {{ $class }}</p><h2>Edit data siswa</h2></div><button type="button" class="wali-dialog-close" data-close-student-dialog aria-label="Tutup">×</button></div>
                             <label class="wali-monitoring-field"><span>Nama lengkap</span><input name="name" type="text" value="{{ old('name') }}" required maxlength="255">@error('name')<small class="wali-field-error">{{ $message }}</small>@enderror</label>
                             <label class="wali-monitoring-field"><span>NISN</span><input name="nisn" type="text" value="{{ old('nisn') }}" required maxlength="20">@error('nisn')<small class="wali-field-error">{{ $message }}</small>@enderror</label>
                             <label class="wali-monitoring-field"><span>Jenis kelamin</span><select name="jenis_kelamin" required><option value="">Pilih jenis kelamin</option><option value="Laki-laki" @selected(old('jenis_kelamin') === 'Laki-laki')>Laki-laki</option><option value="Perempuan" @selected(old('jenis_kelamin') === 'Perempuan')>Perempuan</option></select>@error('jenis_kelamin')<small class="wali-field-error">{{ $message }}</small>@enderror</label>
+                            <label class="wali-monitoring-field"><span>Nomor WhatsApp orang tua/wali</span><input name="nomor_whatsapp_orang_tua" type="tel" value="{{ old('nomor_whatsapp_orang_tua') }}" placeholder="Contoh: 081234567890" required maxlength="25">@error('nomor_whatsapp_orang_tua')<small class="wali-field-error">{{ $message }}</small>@enderror</label>
                             <label class="wali-monitoring-field"><span>Riwayat alergi (opsional)</span><textarea name="riwayat_alergi" rows="3" maxlength="2000">{{ old('riwayat_alergi') }}</textarea>@error('riwayat_alergi')<small class="wali-field-error">{{ $message }}</small>@enderror</label>
                             <div class="wali-student-form-actions"><button type="button" class="wali-detail-close" data-close-student-dialog>Batal</button><button type="submit" class="wali-filter-submit">Simpan perubahan</button></div>
                         </form>
