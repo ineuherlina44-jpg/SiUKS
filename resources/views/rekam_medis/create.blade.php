@@ -48,6 +48,7 @@
                 <span>{{ session('error') }}</span>
             </div>
         @endif
+        {{-- kode bukti bahwa error handling berhasil menampilkan pesan error ketika validasi gagal, misalnya jika siswa tidak dipilih atau diagnosa tidak diisi. --}}
 
         @if ($errors->any())
             <div class="mb-4 p-3.5 bg-[#FDE7EA] border border-[#D62839]/30 text-[#D62839] text-xs rounded-xl font-semibold">
