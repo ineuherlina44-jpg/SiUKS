@@ -1,6 +1,6 @@
-# SiUKS – Sistem Informasi Ulangan Kredit Siswa
+# SiUKS – Sistem Informasi Kesehatan Siswa
 
-> A Laravel‑based web application that helps teachers manage class rosters, record student diagnoses, and track medication usage. Designed for the **S4‑04 Repository README Lengkap** deliverable.
+> A Laravel‑based web application that helps schools manage student health records, including disease diagnoses and medication tracking. This README is intended for the **S4‑04 Repository README Lengkap** deliverable.
 
 ---
 
@@ -20,17 +20,17 @@
 ---
 
 ## Demo
-**(Insert screenshot of the dashboard here)**
-
+**(Insert screenshot of the health dashboard here)**
 `[ LETAKKAN DI SINI SCREENSHOT DASHBOARD ]`
 
 ---
 
 ## Features
-- **Import siswa per kelas** – pilih kelas, semua siswa otomatis terdaftar.
-- **Diagnosa penyakit** – dropdown pilihan penyakit dengan opsi input bebas.
-- **Pencatatan obat** – dropdown obat, catatan tambahan untuk dosis.
-- **Laporan PDF** – otomatis menghasilkan laporan sprint (S4‑04) dengan placeholder screenshot.
+- **Import siswa per kelas** – pilih kelas, semua siswa otomatis terdaftar tanpa input manual satu per satu.
+- **Diagnosa penyakit** – dropdown dengan pilihan penyakit umum; pengguna dapat menambah entri custom bila diperlukan.
+- **Pencatatan obat** – dropdown obat, dengan kolom tambahan untuk dosis dan catatan.
+- **Manajemen peran** – admin dan wali kelas dapat mengelola data sesuai hak akses masing‑masing.
+- **Laporan PDF** – menghasilkan laporan lengkap (S4‑04) yang mencakup README dan placeholder screenshot.
 
 ---
 
@@ -38,7 +38,7 @@
 | Layer | Technology |
 |-------|------------|
 | Backend | Laravel 10 (PHP ^8.2) |
-| Frontend | Blade + Tailwind CSS |
+| Frontend | Blade + Tailwind CSS |
 | Database | MySQL / MariaDB |
 | PDF Generation | Microsoft Edge (headless) + Node.js script |
 | CI/CD | GitHub Actions (optional) |
@@ -57,7 +57,7 @@
 ## Installation
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/SiUKS.git
+git clone https://github.com/ineuherlina44-jpg/SiUKS.git
 cd SiUKS
 
 # Install PHP dependencies
@@ -66,14 +66,14 @@ composer install
 # Install front‑end assets
 npm install && npm run dev
 
-# Copy environment file and configure database credentials
+# Copy environment file and set database credentials
 cp .env.example .env
 # edit .env → set DB_DATABASE, DB_USERNAME, DB_PASSWORD, etc.
 
 # Generate application key
 php artisan key:generate
 
-# Run migrations and seed demo data (optional)
+# Run migrations and (optionally) seed demo data
 php artisan migrate --seed
 ```
 
@@ -92,9 +92,9 @@ php artisan serve
 /app                – Laravel application code (controllers, models, …)
 /database
    ├─ migrations   – Database schema
-   └─ seeders      – Seed data (example students, diseases)
+   └─ seeders      – Seed data (example students, diseases, medicines)
 /resources
-   ├─ views        – Blade templates
+   ├─ views        – Blade templates (dashboard, forms)
    ├─ js / css     – Front‑end assets
 /public             – Public assets and entry point
 /scratch            – Helper scripts (PDF generation, docs)
@@ -112,7 +112,7 @@ node build_s4_04_pdf.js
 The generated file will be saved as:
 `C:/Users/Hype GLK/.gemini/antigravity/brain/4301e258-6d82-4b06-9bd9-6046bee7df1f/S4-04_REPOSITORY_README_LENGKAP_SIUKS.pdf`
 
-If you need to add additional screenshots for the S4‑04 report, replace the placeholder tags (`[ LETAKKAN DI SINI SCREENSHOT ... ]`) in the PDF using any PDF editor.
+Replace the placeholder tags (`[ LETAKKAN DI SINI SCREENSHOT ... ]`) in the PDF using any PDF editor if you need to insert actual screenshots.
 
 ---
 
@@ -140,5 +140,5 @@ Distributed under the **MIT License**. See `LICENSE` for details.
 ---
 
 ## Contact
-- **Author**: Your Name – [GitHub Profile](https://github.com/your-username)
-- **Issue Tracker**: https://github.com/your-username/SiUKS/issues
+- **Author**: Your Name – [GitHub Profile](https://github.com/ineuherlina44-jpg)
+- **Issue Tracker**: https://github.com/ineuherlina44-jpg/SiUKS/issues
