@@ -21,8 +21,6 @@
 
 ## Demo
 **(Insert screenshot of the health dashboard here)**
-`[ LETAKKAN DI SINI SCREENSHOT DASHBOARD ]`
-
 ---
 
 ## Features
