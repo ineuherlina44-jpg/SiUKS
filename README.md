@@ -1,70 +1,144 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# SiUKS – Sistem Informasi Ulangan Kredit Siswa
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+> A Laravel‑based web application that helps teachers manage class rosters, record student diagnoses, and track medication usage. Designed for the **S4‑04 Repository README Lengkap** deliverable.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Table of Contents
+- [Demo](#demo)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Running the Application](#running-the-application)
+- [Repository Structure](#repository-structure)
+- [Generating PDF (S4‑04)](#generating-pdf-s4-04)
+- [Testing](#testing)
+- [Contributing](#contributing)
+- [License](#license)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Demo
+**(Insert screenshot of the dashboard here)**
 
-## Deploy SiUKS
+`[ LETAKKAN DI SINI SCREENSHOT DASHBOARD ]`
 
-For production configuration, migrations, and creating the first administrator, see the [SiUKS deployment guide](docs/deployment.md).
+---
 
-## Learning Laravel
+## Features
+- **Import siswa per kelas** – pilih kelas, semua siswa otomatis terdaftar.
+- **Diagnosa penyakit** – dropdown pilihan penyakit dengan opsi input bebas.
+- **Pencatatan obat** – dropdown obat, catatan tambahan untuk dosis.
+- **Laporan PDF** – otomatis menghasilkan laporan sprint (S4‑04) dengan placeholder screenshot.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+---
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## Tech Stack
+| Layer | Technology |
+|-------|------------|
+| Backend | Laravel 10 (PHP ^8.2) |
+| Frontend | Blade + Tailwind CSS |
+| Database | MySQL / MariaDB |
+| PDF Generation | Microsoft Edge (headless) + Node.js script |
+| CI/CD | GitHub Actions (optional) |
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## Prerequisites
+- **PHP** `^8.2`
+- **Composer** `^2.5`
+- **Node.js** `>=18` and **npm**
+- **MySQL** (or compatible) database
+- **Microsoft Edge** (installed, used for headless PDF conversion)
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+---
 
-### Premium Partners
+## Installation
+```bash
+# Clone the repository
+git clone https://github.com/your-username/SiUKS.git
+cd SiUKS
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+# Install PHP dependencies
+composer install
+
+# Install front‑end assets
+npm install && npm run dev
+
+# Copy environment file and configure database credentials
+cp .env.example .env
+# edit .env → set DB_DATABASE, DB_USERNAME, DB_PASSWORD, etc.
+
+# Generate application key
+php artisan key:generate
+
+# Run migrations and seed demo data (optional)
+php artisan migrate --seed
+```
+
+---
+
+## Running the Application
+```bash
+php artisan serve
+# Application will be available at http://127.0.0.1:8000
+```
+
+---
+
+## Repository Structure
+```
+/app                – Laravel application code (controllers, models, …)
+/database
+   ├─ migrations   – Database schema
+   └─ seeders      – Seed data (example students, diseases)
+/resources
+   ├─ views        – Blade templates
+   ├─ js / css     – Front‑end assets
+/public             – Public assets and entry point
+/scratch            – Helper scripts (PDF generation, docs)
+```
+
+---
+
+## Generating PDF (S4‑04)
+The **S4‑04** deliverable is a PDF that contains the full repository README.
+A helper script (`scratch/build_s4_04_pdf.js`) already exists.
+```bash
+cd scratch
+node build_s4_04_pdf.js
+```
+The generated file will be saved as:
+`C:/Users/Hype GLK/.gemini/antigravity/brain/4301e258-6d82-4b06-9bd9-6046bee7df1f/S4-04_REPOSITORY_README_LENGKAP_SIUKS.pdf`
+
+If you need to add additional screenshots for the S4‑04 report, replace the placeholder tags (`[ LETAKKAN DI SINI SCREENSHOT ... ]`) in the PDF using any PDF editor.
+
+---
+
+## Testing
+```bash
+php artisan test          # Backend tests (PHPUnit / Pest)
+npm run test:unit        # Front‑end unit tests (if any)
+```
+
+---
 
 ## Contributing
+1. Fork the repository.
+2. Create a feature branch (`git checkout -b feat/your-feature`).
+3. Commit your changes with clear messages.
+4. Push the branch and open a Pull Request.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Please follow the Laravel coding standards and run `php artisan format` before submitting.
 
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
 ## License
+Distributed under the **MIT License**. See `LICENSE` for details.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+---
+
+## Contact
+- **Author**: Your Name – [GitHub Profile](https://github.com/your-username)
+- **Issue Tracker**: https://github.com/your-username/SiUKS/issues
