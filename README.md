@@ -1,4 +1,4 @@
-# SiUKS – Sistem Informasi Kesehatan Siswa
+# SiUKS – Sistem Informasi Manajement Kesehatan dan Inventory UKS Sekolah
 
 > A Laravel‑based web application that helps schools manage student health records, including disease diagnoses and medication tracking. This README is intended for the **S4‑04 Repository README Lengkap** deliverable.
 
