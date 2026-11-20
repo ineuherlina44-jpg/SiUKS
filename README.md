@@ -1,6 +1,6 @@
 # SiUKS – Sistem Informasi Manajement Kesehatan dan Inventory UKS Sekolah
 
-> A Laravel‑based web application that helps schools manage student health records, including disease diagnoses and medication tracking. This README is intended for the **S4‑04 Repository README Lengkap** deliverable.
+> A Laravel‑based web application that helps schools manage student health records, disease diagnoses, medication tracking, and UKS inventory. This README is for the **S4‑04 Repository README Lengkap** deliverable.
 
 ---
 
@@ -20,13 +20,16 @@
 ---
 
 ## Demo
-**(Insert screenshot of the health dashboard here)**
+**(Insert screenshot of the health & inventory dashboard here)**
+`[ LETAKKAN DI SINI SCREENSHOT DASHBOARD ]`
+
 ---
 
 ## Features
 - **Import siswa per kelas** – pilih kelas, semua siswa otomatis terdaftar tanpa input manual satu per satu.
 - **Diagnosa penyakit** – dropdown dengan pilihan penyakit umum; pengguna dapat menambah entri custom bila diperlukan.
 - **Pencatatan obat** – dropdown obat, dengan kolom tambahan untuk dosis dan catatan.
+- **Inventory UKS** – kelola stok alat kesehatan, obat, dan perlengkapan UKS.
 - **Manajemen peran** – admin dan wali kelas dapat mengelola data sesuai hak akses masing‑masing.
 - **Laporan PDF** – menghasilkan laporan lengkap (S4‑04) yang mencakup README dan placeholder screenshot.
 
@@ -64,7 +67,7 @@ composer install
 # Install front‑end assets
 npm install && npm run dev
 
-# Copy environment file and set database credentials
+# Copy environment file and configure database credentials
 cp .env.example .env
 # edit .env → set DB_DATABASE, DB_USERNAME, DB_PASSWORD, etc.
 
@@ -90,7 +93,7 @@ php artisan serve
 /app                – Laravel application code (controllers, models, …)
 /database
    ├─ migrations   – Database schema
-   └─ seeders      – Seed data (example students, diseases, medicines)
+   └─ seeders      – Seed data (example students, diseases, medicines, inventory)
 /resources
    ├─ views        – Blade templates (dashboard, forms)
    ├─ js / css     – Front‑end assets
